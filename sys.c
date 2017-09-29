@@ -37,7 +37,15 @@ int sys_write(int fd, char * buffer, int size)
 	// size: number of bytes
 	// return a negative number in case of error (specifying the kind of error)
 	// 	and the number of bytes written if OK 
-	return 0;
+	int res = -1;
+	int check = check_fd(fd, ESCRIPTURA);
+	if(check) return check;
+	else if(buffer != NULL && size >= 0){
+		copy_from_user(buffer, buffer, size);
+		res = sys_write_console(buffer,size);
+	}
+
+	return res;
 }
 
 int sys_getpid()

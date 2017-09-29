@@ -6,13 +6,27 @@
 
 #include <types.h>
 
+#include <errno.h>
+
 int errno;
 
 int write(int fd, char *buffer, int size)
 {
-  //__asm__ __volatile__( 
-    //"movl $4, %eax\n\t"
-    //"int 0x80\n\t");
+  int res;
+  __asm__ volatile( 
+    "int $0x80"              //  interrupcio 0x80, crida al sistema
+    : "=a" (res),           //  el resultat de %eax es guarda en res
+      "+b" (fd),            //  passar el parametre fd per %ebx
+      "+c" (buffer),        //  passar el parametre bufer per %ecx
+      "+d" (size)           //  passar el parametre size per %edx
+    : "a" (4)               //  %eax = 4, la crida al sistema write
+    );
+
+  if(-125 <= res && res < 0){
+    errno = -res;
+    res = -1;
+  }
+  return res;
 }
 
 void itoa(int a, char *b)
@@ -50,3 +64,12 @@ int strlen(char *a)
   return i;
 }
 
+void perror()
+{
+  switch(errno)
+  {
+    case ENOSYS:
+      write(1, "Function not implemented\n", 25);
+      break;
+  }
+}
