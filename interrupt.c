@@ -107,9 +107,9 @@ void keyboard_routine()
   unsigned char input = inb( 0x60 );
   
   if ( input&0x80 ){
-    unsigned char c = input & 0x7f;
+    unsigned char c = char_map[input & 0x7f];
     if(c != '\0') 
-      printc_xy(0,0, char_map[c] );
+      printc_xy(0,0, c );
     else
       printc_xy(0,0,'C');
   }
