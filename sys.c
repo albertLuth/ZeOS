@@ -40,11 +40,6 @@ int sys_write(int fd, char * buffer, int size)
 	return 0;
 }
 
-void clock_routine()
-{
-	
-}
-
 int sys_getpid()
 {
 	return current()->PID;

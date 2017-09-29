@@ -82,3 +82,11 @@ fin:
       movl %eax, 0x18(%esp)               // change the eax value in the stack
       RESTORE_ALL                         // restore the context
       iret                                // returns program control from an exception or interrupt handler to a program that was interrupted 
+
+
+ENTRY(keyboard_handler)
+      SAVE_ALL
+      EOI
+      call keyboard_routine
+      RESTORE_ALL                         
+      iret

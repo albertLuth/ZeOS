@@ -8,6 +8,13 @@
 
 int errno;
 
+int write(int fd, char *buffer, int size)
+{
+  //__asm__ __volatile__( 
+    //"movl $4, %eax\n\t"
+    //"int 0x80\n\t");
+}
+
 void itoa(int a, char *b)
 {
   int i, i1;

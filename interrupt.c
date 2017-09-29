@@ -78,6 +78,7 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
 }
 
 void system_call_handler();
+void keyboard_handler();
 
 void setIdt()
 {
@@ -89,9 +90,20 @@ void setIdt()
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
 
-  //setInterruptHandler( 33, keyboard_handler, 0);
-  setTrapHandler(0x80, system_call_handler, 3);
+  setInterruptHandler( 33, keyboard_handler, 0);
+  //setTrapHandler(0x80, system_call_handler, 3);
 
   set_idt_reg(&idtR);
+}
+
+
+void clock_routine()
+{
+  
+}
+
+void keyboard_routine()
+{
+  printk("hola");
 }
 
