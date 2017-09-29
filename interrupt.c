@@ -104,6 +104,9 @@ void clock_routine()
 
 void keyboard_routine()
 {
-  printk("hola");
+  char c = inb( 0x60 );
+  
+  if ( c&0x80 ) 
+    printc( char_map[c&0x7f] );
 }
 
