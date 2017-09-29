@@ -104,9 +104,14 @@ void clock_routine()
 
 void keyboard_routine()
 {
-  char c = inb( 0x60 );
+  unsigned char input = inb( 0x60 );
   
-  if ( c&0x80 ) 
-    printc( char_map[c&0x7f] );
+  if ( input&0x80 ){
+    unsigned char c = input & 0x7f;
+    if(c != '\0') 
+      printc_xy(0,0, char_map[c] );
+    else
+      printc_xy(0,0,'C');
+  }
 }
 
