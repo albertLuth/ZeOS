@@ -29,6 +29,22 @@ int write(int fd, char *buffer, int size)
   return res;
 }
 
+int gettime()
+{
+  int res;
+  __asm__ volatile( 
+    "int $0x80"              //  interrupcio 0x80, crida al sistema
+    : "=a" (res)             //  el resultat de %eax es guarda en res
+    : "a" (10)               //  %eax = 10, la crida al sistema write
+    );
+
+  if(-125 <= res && res < 0){
+    errno = -res;
+    res = -1;
+  }
+  return res;
+}
+
 void itoa(int a, char *b)
 {
   int i, i1;
@@ -70,6 +86,14 @@ void perror()
   {
     case ENOSYS:
       write(1, "Function not implemented\n", 25);
+      break;
+      
+    case EINVAL:
+      write(1, "Invalid argument\n", 17);
+      break;
+      
+    case EPERM:
+      write(1, "Operation not permitted\n", 24);
       break;
   }
 }

@@ -67,7 +67,12 @@
 #define EOI \
       movb $0x20, %al; \
       outb  %al, $0x20; 
-  
+      
+      
+      
+/***************** handlers *****************/ 
+
+
 ENTRY(system_call_handler)
       SAVE_ALL                            // save the current context
       cmpl $0, %eax                       // is syscall number negative? 
@@ -90,3 +95,13 @@ ENTRY(keyboard_handler)
       call keyboard_routine
       RESTORE_ALL                         
       iret
+
+
+ENTRY(clock_handler)
+      SAVE_ALL
+      EOI
+      call clock_routine
+      RESTORE_ALL                         
+      iret
+      
+      

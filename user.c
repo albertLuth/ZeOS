@@ -4,6 +4,8 @@ char buff[24];
 
 int pid;
 
+extern int zeos_ticks;
+
 int add(int par1, int par2){
 	__asm__("movl 0x8(%ebp), %eax");
 	__asm__("addl 0xc(%ebp), %eax");
@@ -27,6 +29,7 @@ long outer(long n)
 	return acum;
 }
 
+extern int zeos_ticks = 0;
 
 int __attribute__ ((__section__(".text.main")))
   main()
@@ -34,11 +37,19 @@ int __attribute__ ((__section__(".text.main")))
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
      /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
 
-	write(1, "hey",4);	
+	write(1, "\nProvant WRITE\n",15);	
     long count, acum;
     count = 76;
     acum = 0;
-    acum = outer(count);
-    while(1);
+    //acum = outer(count);
+    int time = 0;
+    while(1) {
+		time = gettime();
+		char buffer[5];
+		itoa(time, buffer);
+		//write(1, "Gettime: ",9);
+		write(1,buffer,sizeof(buffer));
+		write(1, "\n",1);
+	}
     return 0;	
 }

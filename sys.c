@@ -18,6 +18,8 @@
 #define LECTURA 0
 #define ESCRIPTURA 1
 
+extern int zeos_ticks;
+
 int check_fd(int fd, int permissions)
 {
   if (fd!=1) return -EBADF; /* Bad file number */
@@ -30,6 +32,11 @@ int sys_ni_syscall()
 	return -ENOSYS;
 }
 
+int sys_gettime()
+{
+	return zeos_ticks;
+}
+
 int sys_write(int fd, char * buffer, int size)
 {
 	// fd: file descriptor, in this delivery it must always be 1
@@ -39,12 +46,17 @@ int sys_write(int fd, char * buffer, int size)
 	// 	and the number of bytes written if OK 
 	int res = -1;
 	int check = check_fd(fd, ESCRIPTURA);
-	if(check) return check;
-	else if(buffer != NULL && size >= 0){
+	
+	if(check) 
+		return check;
+	
+	if(size < 0) 
+		return -EINVAL;
+	
+	if(buffer != NULL) {
 		copy_from_user(buffer, buffer, size);
 		res = sys_write_console(buffer,size);
 	}
-
 	return res;
 }
 

@@ -15,6 +15,14 @@
  .long sys_ni_syscall
  .long sys_ni_syscall
  .long sys_write
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_gettime
+ .long sys_ni_syscall
+ .long sys_ni_syscall
 
 
 .globl MAX_SYSCALL
