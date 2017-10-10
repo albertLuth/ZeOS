@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7f9625e7f010. after alignment, vector=0x7f9625e80000
+00000000000i[MEM0  ] allocated memory at 0x7f9fa3227010. after alignment, vector=0x7f9fa3228000
 00000000000i[MEM0  ] 16,00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=16
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/opt/bochs_gdb/share/bochs/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Wed Oct  4 16:41:58 2017 (time0=1507128118)
+00000000000i[CMOS  ] Setting initial clock to: Tue Oct 10 15:39:02 2017 (time0=1507642742)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -167,140 +167,60 @@
 00001529176i[BXVGA ] VBE known Display Interface b0c0
 00001529208i[BXVGA ] VBE known Display Interface b0c5
 00001532133i[VBIOS ] VBE Bios $Id: vbe.c,v 1.65 2014/07/08 18:02:25 vruppert Exp $
-00014040199i[BIOS  ] Booting from 0000:7c00
-00029213428i[XGUI  ] charmap update. Font Height is 16
-00029731043i[FLOPPY] partial read() on floppy image returns 476/512
-00029775487i[FLOPPY] read() on floppy image returns 0
-00029819931i[FLOPPY] read() on floppy image returns 0
-00029864375i[FLOPPY] read() on floppy image returns 0
-00029908819i[FLOPPY] read() on floppy image returns 0
-00029953263i[FLOPPY] read() on floppy image returns 0
-00029997707i[FLOPPY] read() on floppy image returns 0
-00030043898i[FLOPPY] read() on floppy image returns 0
-00030088342i[FLOPPY] read() on floppy image returns 0
-00030132786i[FLOPPY] read() on floppy image returns 0
-00030177230i[FLOPPY] read() on floppy image returns 0
-00030221674i[FLOPPY] read() on floppy image returns 0
-00030266118i[FLOPPY] read() on floppy image returns 0
-00030310562i[FLOPPY] read() on floppy image returns 0
-00030355006i[FLOPPY] read() on floppy image returns 0
-00030399450i[FLOPPY] read() on floppy image returns 0
-00030443894i[FLOPPY] read() on floppy image returns 0
-00030488338i[FLOPPY] read() on floppy image returns 0
-00030532782i[FLOPPY] read() on floppy image returns 0
-00030577226i[FLOPPY] read() on floppy image returns 0
-00030621670i[FLOPPY] read() on floppy image returns 0
-00030666114i[FLOPPY] read() on floppy image returns 0
-00030710558i[FLOPPY] read() on floppy image returns 0
-00030755002i[FLOPPY] read() on floppy image returns 0
-00030799446i[FLOPPY] read() on floppy image returns 0
-00030845644i[FLOPPY] read() on floppy image returns 0
-00030890088i[FLOPPY] read() on floppy image returns 0
-00030934532i[FLOPPY] read() on floppy image returns 0
-00030978976i[FLOPPY] read() on floppy image returns 0
-00031023420i[FLOPPY] read() on floppy image returns 0
-00031067864i[FLOPPY] read() on floppy image returns 0
-00031112308i[FLOPPY] read() on floppy image returns 0
-02642160000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02672280000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02743708000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02770480000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02785100000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02805132000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02817392000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02833052000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02839216000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02851868000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02863116000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02883040000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02893060000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02924316000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02974748000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-02995920000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03011560000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03027224000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03040612000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03051784000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03066292000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03079676000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03096404000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03107528000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03125396000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03136560000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03153308000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03168956000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03609196000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03644864000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03669456000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03695064000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03715312000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03737580000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03749844000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03768856000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03781084000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03796704000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03808952000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03828004000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03882800000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03937400000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03953016000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03980908000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-03994420000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04009988000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04021232000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04039024000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04052520000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04069184000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04083700000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04098156000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04112520000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04125708000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04140036000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04155508000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04168704000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04184208000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04198704000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04216512000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04233024000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04248564000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04264296000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04279764000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04295532000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04313292000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04351332000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-04370216000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-05202336000e[XGUI  ] xkeypress(): keysym e7 unhandled!
-05231348000e[XGUI  ] xkeypress(): keysym e7 unhandled!
-05396720000e[XGUI  ] xkeypress(): keysym e7 unhandled!
-05416876000e[XGUI  ] xkeypress(): keysym e7 unhandled!
-05472764000e[XGUI  ] xkeypress(): keysym e7 unhandled!
-05498328000e[XGUI  ] xkeypress(): keysym e7 unhandled!
-05608808000e[XGUI  ] xkeypress(): keysym fe50 unhandled!
-05613884000e[XGUI  ] xkeypress(): keysym fe50 unhandled!
-05633052000e[XGUI  ] xkeypress(): keysym fe50 unhandled!
-05647436000e[XGUI  ] xkeypress(): keysym fe50 unhandled!
-07110588000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-07117280000e[XGUI  ] xkeypress(): keysym f1 unhandled!
-25613568000p[XGUI  ] >>PANIC<< POWER button turned off.
-25613568000i[CPU0  ] CPU is in protected mode (active)
-25613568000i[CPU0  ] CS.mode = 32 bit
-25613568000i[CPU0  ] SS.mode = 32 bit
-25613568000i[CPU0  ] EFER   = 0x00000000
-25613568000i[CPU0  ] | EAX=00000031  EBX=0011bfdc  ECX=0011bfe0  EDX=00000034
-25613568000i[CPU0  ] | ESP=00016f80  EBP=00016f88  ESI=0011bfe0  EDI=00000005
-25613568000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af pf cf
-25613568000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-25613568000i[CPU0  ] |  CS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-25613568000i[CPU0  ] |  DS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-25613568000i[CPU0  ] |  SS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-25613568000i[CPU0  ] |  ES:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-25613568000i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
-25613568000i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
-25613568000i[CPU0  ] | EIP=0001034a (0001034a)
-25613568000i[CPU0  ] | CR0=0x80000011 CR2=0x00000000
-25613568000i[CPU0  ] | CR3=0x0002a000 CR4=0x00000000
-25613568000i[CPU0  ] 0x0001034a>> out 0xe9, al : E6E9
-25613568000i[CMOS  ] Last time is 1507134521 (Wed Oct  4 18:28:41 2017)
-25613568000i[XGUI  ] Exit
-25613568000i[      ] restoring default signal behavior
-25613568000i[SIM   ] quit_sim called with exit code 1
+00014040191i[BIOS  ] Booting from 0000:7c00
+00027379080i[XGUI  ] charmap update. Font Height is 16
+00029731035i[FLOPPY] partial read() on floppy image returns 476/512
+00029775479i[FLOPPY] read() on floppy image returns 0
+00029819923i[FLOPPY] read() on floppy image returns 0
+00029864367i[FLOPPY] read() on floppy image returns 0
+00029908811i[FLOPPY] read() on floppy image returns 0
+00029953255i[FLOPPY] read() on floppy image returns 0
+00029997699i[FLOPPY] read() on floppy image returns 0
+00030043890i[FLOPPY] read() on floppy image returns 0
+00030088334i[FLOPPY] read() on floppy image returns 0
+00030132778i[FLOPPY] read() on floppy image returns 0
+00030177222i[FLOPPY] read() on floppy image returns 0
+00030221666i[FLOPPY] read() on floppy image returns 0
+00030266110i[FLOPPY] read() on floppy image returns 0
+00030310554i[FLOPPY] read() on floppy image returns 0
+00030354998i[FLOPPY] read() on floppy image returns 0
+00030399442i[FLOPPY] read() on floppy image returns 0
+00030443886i[FLOPPY] read() on floppy image returns 0
+00030488330i[FLOPPY] read() on floppy image returns 0
+00030532774i[FLOPPY] read() on floppy image returns 0
+00030577218i[FLOPPY] read() on floppy image returns 0
+00030621662i[FLOPPY] read() on floppy image returns 0
+00030666106i[FLOPPY] read() on floppy image returns 0
+00030710550i[FLOPPY] read() on floppy image returns 0
+00030754994i[FLOPPY] read() on floppy image returns 0
+00030799438i[FLOPPY] read() on floppy image returns 0
+00030845636i[FLOPPY] read() on floppy image returns 0
+00030890080i[FLOPPY] read() on floppy image returns 0
+00030934524i[FLOPPY] read() on floppy image returns 0
+00030978968i[FLOPPY] read() on floppy image returns 0
+00031023412i[FLOPPY] read() on floppy image returns 0
+00031067856i[FLOPPY] read() on floppy image returns 0
+00031112300i[FLOPPY] read() on floppy image returns 0
+00548232000p[XGUI  ] >>PANIC<< POWER button turned off.
+00548232000i[CPU0  ] CPU is in protected mode (active)
+00548232000i[CPU0  ] CS.mode = 32 bit
+00548232000i[CPU0  ] SS.mode = 32 bit
+00548232000i[CPU0  ] EFER   = 0x00000000
+00548232000i[CPU0  ] | EAX=00000000  EBX=0011bfe0  ECX=00000234  EDX=00000004
+00548232000i[CPU0  ] | ESP=00016f80  EBP=00016f88  ESI=0011bfe0  EDI=00000005
+00548232000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf AF pf cf
+00548232000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+00548232000i[CPU0  ] |  CS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00548232000i[CPU0  ] |  DS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00548232000i[CPU0  ] |  SS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00548232000i[CPU0  ] |  ES:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00548232000i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00548232000i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00548232000i[CPU0  ] | EIP=00010345 (00010345)
+00548232000i[CPU0  ] | CR0=0x80000011 CR2=0x00000000
+00548232000i[CPU0  ] | CR3=0x0002a000 CR4=0x00000000
+00548232000i[CPU0  ] 0x00010345>> mov eax, dword ptr ss:[ebp+8] : 8B4508
+00548232000i[CMOS  ] Last time is 1507642879 (Tue Oct 10 15:41:19 2017)
+00548232000i[XGUI  ] Exit
+00548232000i[      ] restoring default signal behavior
+00548232000i[SIM   ] quit_sim called with exit code 1

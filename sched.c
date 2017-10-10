@@ -55,8 +55,24 @@ void cpu_idle(void)
 
 	while(1)
 	{
-	;
+	
 	}
+}
+
+void init_readyqueue()
+{
+	INIT_LIST_HEAD(&readyqueue);
+}
+
+void init_freequeue()
+{
+	INIT_LIST_HEAD(&freequeue);
+	int i;
+	for(i = 0; i < NR_TASKS; i++) {
+		task[i].task.PID = -1;
+		list_add(&(task[i].task.list),&freequeue);
+	}
+
 }
 
 void init_idle (void)
@@ -66,10 +82,12 @@ void init_idle (void)
 
 void init_task1(void)
 {
+	
 }
 
 
-void init_sched(){
+void init_sched()
+{
 
 }
 

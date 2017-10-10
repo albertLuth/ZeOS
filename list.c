@@ -9,6 +9,7 @@ void INIT_LIST_HEAD(struct list_head *list)
 	list->prev = list;
 }
 
+
 /*
  * Insert a new entry between two known consecutive entries.
  *

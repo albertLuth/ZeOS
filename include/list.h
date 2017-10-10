@@ -51,6 +51,7 @@ struct list_head {
  */
 void INIT_LIST_HEAD(struct list_head *head);
 
+
 /**
  * list_add - add a new entry
  * @new: new entry to be added
