@@ -15,7 +15,7 @@ union task_union protected_tasks[NR_TASKS+2]
 
 union task_union *task = &protected_tasks[1]; /* == union task_union task[NR_TASKS] */
 
-#if 0
+#if 1
 struct task_struct *list_head_to_task_struct(struct list_head *l)
 {
   return list_entry( l, struct task_struct, list);
@@ -38,15 +38,13 @@ page_table_entry * get_PT (struct task_struct *t)
 }
 
 
-int allocate_DIR(struct task_struct *t) 
+void allocate_DIR(struct task_struct *t) 
 {
 	int pos;
 
 	pos = ((int)t-(int)task)/sizeof(union task_union);
 
 	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos]; 
-
-	return 1;
 }
 
 void cpu_idle(void)
@@ -77,18 +75,54 @@ void init_freequeue()
 
 void init_idle (void)
 { 
+	
+	struct list_head *first =  list_first(&freequeue);		//agafar el primer element de la frequeue
+	list_del(first);										//el proces ja no esta en la frequeue
+	
+	struct task_struct pcb = *list_head_to_task_struct(first);
 
+	pcb.PID = 0;
+
+	allocate_DIR(&pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+
+	union task_union task_u = (union task_union)pcb;
+
+	task_u.stack[KERNEL_STACK_SIZE-1] = &(cpu_idle);		//adreça de retorn 
+	task_u.stack[KERNEL_STACK_SIZE-2] = 0;					//ebp
+	task_u.task.kernel_esp = &(task_u.stack[KERNEL_STACK_SIZE-2]);
+	//task_u.task.kernel_esp = KERNEL_ESP(&task_u);			//esp
+
+	idle_task = &pcb;
 }
 
 void init_task1(void)
 {
 	
+	struct list_head *first =  list_first(&freequeue);		//agafar el primer element de la frequeue
+	list_del(first);										//el proces ja no esta en la frequeue
+	
+	struct task_struct pcb = *list_head_to_task_struct(first);
+
+	pcb.PID = 1;
+
+	allocate_DIR(&pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+
+	set_user_pages(&pcb);
+
+	union task_union task_u = (union task_union)pcb;
+
+	tss.esp0 = KERNEL_ESP(&task_u);
+
+	set_cr3(pcb.dir_pages_baseAddr);
+
 }
 
 
 void init_sched()
 {
 
+	init_freequeue();
+	init_readyqueue();
 }
 
 struct task_struct* current()

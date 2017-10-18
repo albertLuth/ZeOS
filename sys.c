@@ -44,6 +44,7 @@ int sys_write(int fd, char * buffer, int size)
 	// size: number of bytes
 	// return a negative number in case of error (specifying the kind of error)
 	// 	and the number of bytes written if OK 
+	char localBuff [64];
 	int res = -1;
 	int check = check_fd(fd, ESCRIPTURA);
 	
