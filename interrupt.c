@@ -109,7 +109,10 @@ void keyboard_routine()
 {
   unsigned char input = inb( 0x60 );
   
+
+
   if ( input&0x80 ){
+    task_switch(idle_task);
     unsigned char c = char_map[input & 0x7f];
     if(c != '\0') 
       printc_xy(70,2, c );

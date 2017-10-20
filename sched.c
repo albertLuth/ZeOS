@@ -53,7 +53,7 @@ void cpu_idle(void)
 
 	while(1)
 	{
-	
+		printk("holaaaaaaa");
 	}
 }
 
@@ -79,20 +79,20 @@ void init_idle (void)
 	struct list_head *first =  list_first(&freequeue);		//agafar el primer element de la frequeue
 	list_del(first);										//el proces ja no esta en la frequeue
 	
-	struct task_struct pcb = *list_head_to_task_struct(first);
+	struct task_struct *pcb = list_head_to_task_struct(first);
 
-	pcb.PID = 0;
+	pcb->PID = 0;
 
-	allocate_DIR(&pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+	allocate_DIR(pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
 
-	union task_union task_u = (union task_union)pcb;
+	union task_union *task_u = (union task_union *)pcb;
 
-	task_u.stack[KERNEL_STACK_SIZE-1] = &(cpu_idle);		//adreça de retorn 
-	task_u.stack[KERNEL_STACK_SIZE-2] = 0;					//ebp
-	task_u.task.kernel_esp = &(task_u.stack[KERNEL_STACK_SIZE-2]);
+	task_u->stack[KERNEL_STACK_SIZE-1] = (int)&(cpu_idle);		//adreça de retorn 
+	task_u->stack[KERNEL_STACK_SIZE-2] = 0;					//ebp
+	task_u->task.kernel_esp = (int)&(task_u->stack[KERNEL_STACK_SIZE-2]);
 	//task_u.task.kernel_esp = KERNEL_ESP(&task_u);			//esp
 
-	idle_task = &pcb;
+	idle_task = pcb;
 }
 
 void init_task1(void)
@@ -136,3 +136,47 @@ struct task_struct* current()
   return (struct task_struct*)(ret_value&0xfffff000);
 }
 
+void inner_task_switch(union task_union *new)
+{
+
+	tss.esp0 = (int)&(new->stack[KERNEL_STACK_SIZE]);
+
+	set_cr3(new->task.dir_pages_baseAddr);
+
+	//movl %esp, current()->task.kernel_esp
+	__asm__ __volatile__(
+		"movl %%esp, %0\n\t"
+		:"=g" (current()->kernel_esp)
+		:
+	);
+
+	//movl new->task.kernel_esp, %esp;
+	__asm__ __volatile__(
+		"movl %0, %%esp\n\t"
+		: 
+		:"g" (new->task.kernel_esp)
+	);
+
+	__asm__ __volatile__(
+		"popl %ebp\n\t"
+		"ret\n\t"
+	);
+}
+
+
+void task_switch(union task_union *new)
+{
+	__asm__ __volatile__ (
+  		"pushl %esi\n\t"
+		"pushl %edi\n\t"
+		"pushl %ebx\n\t"
+	);
+
+	inner_task_switch(new);
+
+	__asm__ __volatile__ (
+  		"popl %ebx\n\t"
+		"popl %edi\n\t"
+		"popl %esi\n\t"
+	);
+}
