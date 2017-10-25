@@ -103,6 +103,7 @@ void clock_routine()
 {
 	zeos_show_clock();
 	zeos_ticks++;
+	if (zeos_ticks == 1030) task_switch(idle_task);
 }
 
 void keyboard_routine()
@@ -112,7 +113,7 @@ void keyboard_routine()
 
 
   if ( input&0x80 ){
-    task_switch(idle_task);
+    
     unsigned char c = char_map[input & 0x7f];
     if(c != '\0') 
       printc_xy(70,2, c );

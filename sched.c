@@ -50,10 +50,16 @@ void allocate_DIR(struct task_struct *t)
 void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
-
+	int pid = sys_fork();
+	char buffer[5];
+	itoa(pid, buffer);
+	//write(1, "Gettime: ",9);
+	printk("getpid() = ");
+	sys_write(1,buffer,sizeof(buffer));
+	printk("\n");
 	while(1)
 	{
-		printk("holaaaaaaa");
+
 	}
 }
 
@@ -87,9 +93,9 @@ void init_idle (void)
 
 	union task_union *task_u = (union task_union *)pcb;
 
-	task_u->stack[KERNEL_STACK_SIZE-1] = (int)&(cpu_idle);		//adreça de retorn 
+	task_u->stack[KERNEL_STACK_SIZE-1] = (unsigned long)&(cpu_idle);		//adreça de retorn 
 	task_u->stack[KERNEL_STACK_SIZE-2] = 0;					//ebp
-	task_u->task.kernel_esp = (int)&(task_u->stack[KERNEL_STACK_SIZE-2]);
+	task_u->task.kernel_esp = (unsigned long)&(task_u->stack[KERNEL_STACK_SIZE-2]);
 	//task_u.task.kernel_esp = KERNEL_ESP(&task_u);			//esp
 
 	idle_task = pcb;
@@ -101,19 +107,19 @@ void init_task1(void)
 	struct list_head *first =  list_first(&freequeue);		//agafar el primer element de la frequeue
 	list_del(first);										//el proces ja no esta en la frequeue
 	
-	struct task_struct pcb = *list_head_to_task_struct(first);
+	struct task_struct *pcb = list_head_to_task_struct(first);
 
-	pcb.PID = 1;
+	pcb->PID = 1;
 
-	allocate_DIR(&pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+	allocate_DIR(pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
 
-	set_user_pages(&pcb);
+	set_user_pages(pcb);
 
-	union task_union task_u = (union task_union)pcb;
+	union task_union *task_u = (union task_union *)pcb;
 
-	tss.esp0 = KERNEL_ESP(&task_u);
+	tss.esp0 = KERNEL_ESP(task_u);
 
-	set_cr3(pcb.dir_pages_baseAddr);
+	set_cr3(pcb->dir_pages_baseAddr);
 
 }
 

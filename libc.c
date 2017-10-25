@@ -44,6 +44,21 @@ int gettime()
   }
   return res;
 }
+int fork()
+{
+  int res;
+  __asm__ volatile( 
+    "int $0x80"              //  interrupcio 0x80, crida al sistema
+    : "=a" (res)             //  el resultat de %eax es guarda en res
+    : "a" (2)               //  %eax = 2, la crida al sistema fork
+    );
+
+  if(-125 <= res && res < 0){
+    errno = -res;
+    res = -1;
+  }
+  return res;
+}
 
 int getpid()
 {
@@ -110,6 +125,10 @@ void perror()
       
     case EPERM:
       write(1, "Operation not permitted\n", 24);
+      break;
+      
+     case ENOMEM:
+      write(1, "Out of memory\n", 14);
       break;
   }
 }

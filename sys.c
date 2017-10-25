@@ -22,9 +22,9 @@ extern int zeos_ticks;
 
 int check_fd(int fd, int permissions)
 {
-  if (fd!=1) return -EBADF; /* Bad file number */
-  if (permissions!=ESCRIPTURA) return -EACCES; /* Permission denied */
-  return 0;
+	if (fd!=1) return -EBADF; /* Bad file number */
+	if (permissions!=ESCRIPTURA) return -EACCES; /* Permission denied */
+	return 0;
 }
 
 int sys_ni_syscall()
@@ -66,11 +66,42 @@ int sys_getpid()
 	return current()->PID;
 }
 
-int sys_fork()
+int sys_fork() 
 {
-  int PID=-1;
+	int PID=-1;
+	// creates the child process
+	
+	//2)
+	//a)
+	if(list_empty(&freequeue)) return -ENOMEM;
+	
+	//b)
+	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la frequeue
+	list_del(child);										//el proces ja no esta en la frequeue
+	
+	struct task_struct *pcb = list_head_to_task_struct(child);
 
-  // creates the child process
+	copy_data(current(),pcb,PAGE_SIZE);
+	
+	//c)
+	allocate_DIR(pcb);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+	
+	//d)
+	int frame = alloc_frame();
+	if(frame == -1) return -ENOMEM;
+	
+	//e)
+		//i)
+		page_table_entry * PT = get_PT(pcb);
+		//ii)
+		int pag;
+		for (pag=0; pag<NUM_PAG_DATA; pag++) {
+			set_ss_pag(PT,pag,frame)
+		}
+		
+  
+  
+  
   
   return PID;
 }
