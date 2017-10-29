@@ -94,9 +94,21 @@ int sys_fork()
 		//i)
 		page_table_entry * PT = get_PT(pcb);
 		//ii)
-		int pag;
-		for (pag=0; pag<NUM_PAG_DATA; pag++) {
-			set_ss_pag(PT,pag,frame)
+		int page, i_free_frame;
+		
+		for (page=0; page<NUM_PAG_DATA; page++) {
+			i_free_frame = alloc_frame();
+
+			if(i_free_frame == -1){
+				
+				int page2;
+				for (page2 = 0; page2 < page; page2++){
+					free_frame(get_frame(PT,PAG_LOG_INIT_DATA+page2));
+				}
+			}
+			else{
+				set_ss_pag(PT, PAG_LOG_INIT_DATA+page2, i_free_frame);
+			}
 		}
 		
   
