@@ -44,6 +44,7 @@ int gettime()
   }
   return res;
 }
+
 int fork()
 {
   int res;
@@ -60,6 +61,15 @@ int fork()
   return res;
 }
 
+void exit()
+{
+  __asm__ volatile( 
+    "int $0x80"              //  interrupcio 0x80, crida al sistema
+    : 
+    : "a" (1)               //  %eax = 2, la crida al sistema fork
+    );
+}
+
 int getpid()
 {
   int res;
@@ -67,6 +77,22 @@ int getpid()
     "int $0x80"              //  interrupcio 0x80, crida al sistema
     : "=a" (res)             //  el resultat de %eax es guarda en res
     : "a" (20)               //  %eax = 20, la crida al sistema getpid
+  );
+
+  if(-125 <= res && res < 0){
+    errno = -res;
+    res = -1;
+  }
+  return res;
+}
+
+int get_stats(int pid, struct stats *st)
+{
+  int res;
+  __asm__ volatile( 
+    "int $0x80"                 //  interrupcio 0x80, crida al sistema
+    : "=a" (res)                //  el resultat de %eax es guarda en res
+    : "a" (35),"b"(pid),"c"(st) //  %eax = 20, la crida al sistema getpid
   );
 
   if(-125 <= res && res < 0){
@@ -132,3 +158,5 @@ void perror()
       break;
   }
 }
+
+

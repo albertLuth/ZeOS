@@ -50,7 +50,7 @@ int __attribute__ ((__section__(".text.main")))
 			itoa(pid, buffer);
 			//write(1, "Gettime: ",9);
 			write(1,buffer,sizeof(buffer));
-			write(1, "fill\n",5);
+			write(1, "   filllllll\n",20);
 		}
 		else {
 			char buffer[5];

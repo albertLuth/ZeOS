@@ -84,12 +84,13 @@ int sys_fork()
 		return -ENOMEM;
 	
 	//b)
-	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la frequeue
-	list_del(child);										//el proces ja no esta en la frequeue
+	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la freequeue
+	list_del(child);										//el proces ja no esta en la freequeue
 	
 	struct task_struct *pcb_child = list_head_to_task_struct(child);
+	union task_union * task_union_child = (union task_union *)pcb_child;
 
-	copy_data( current(), pcb_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
+	copy_data( current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
 	
 	//c)
 	allocate_DIR(pcb_child);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
@@ -102,18 +103,18 @@ int sys_fork()
 	int page, i_free_frame;
 	
 	//buscar memoria fisica per data+stack
-	for (page=0; page < NUM_PAG_DATA; page++){
+	for (page=PAG_LOG_INIT_DATA; page < NUM_PAG_DATA+PAG_LOG_INIT_DATA; page++){
 		i_free_frame = alloc_frame(); //buscar pagines fisiques on mapejar les pagines logiques per data+stack del fill
 
 		if(i_free_frame != -1){
-			set_ss_pag(PT_child, PAG_LOG_INIT_DATA+page, i_free_frame);				
+			set_ss_pag(PT_child, page, i_free_frame);				
 		}
 		else{
 			//si no es pot tot s'ha d'alliberar tota la memoeria que s'havia reservat fins ara 
 			int page2;
-			for (page2 = 0; page2 < page; page2++){
-				free_frame(get_frame(PT_child,PAG_LOG_INIT_DATA+page2));
-				del_ss_pag(PT_child,PAG_LOG_INIT_DATA+page2);
+			for (page2 = PAG_LOG_INIT_DATA; page2 < page; page2++){
+				free_frame(get_frame(PT_child,page2));
+				del_ss_pag(PT_child,page2);
 			}
 			list_add_tail(child,&freequeue);
 
@@ -127,7 +128,7 @@ int sys_fork()
 	}
 
 	//les pagines de code es comparteixen, nomes s'ha de mapejar les adreces
-	for (page = PAG_LOG_INIT_CODE; page < NUM_PAG_CODE; page++){
+	for (page = PAG_LOG_INIT_CODE; page < NUM_PAG_CODE+PAG_LOG_INIT_CODE; page++){
 		set_ss_pag(PT_child, page, get_frame(PT_parent, page));
 	}
 
@@ -143,14 +144,12 @@ int sys_fork()
 	pcb_child->PID = ++PIDs;
 
 
-	union task_union * task_union_child = (union task_union *)pcb_child;
-
 	task_union_child->stack[KERNEL_STACK_SIZE-18] = (int)&ret_from_fork;
   	task_union_child->stack[KERNEL_STACK_SIZE-19] = 0;
   	pcb_child->kernel_esp = (int)&task_union_child->stack[KERNEL_STACK_SIZE-19];
 
 
-	//init_stats(&pcb_child->statistics);
+	init_stats(&pcb_child->statistics);
 
 	pcb_child->state = ST_READY;
 
@@ -160,5 +159,24 @@ int sys_fork()
 }
 
 void sys_exit()
-{  
+{
+
+	struct task_struct * pcb = current();
+	page_table_entry * PT = get_PT(pcb);
+
+	int page;
+	for (page = PAG_LOG_INIT_DATA; page < NUM_PAG_DATA+PAG_LOG_INIT_DATA; page++){
+		free_frame(get_frame(PT,page));
+		del_ss_pag(PT,page);
+	}
+
+	list_add_tail(&(pcb->list), &freequeue);
+	pcb->PID = -1;
+	sched_next_rr();
+
+}
+
+void sys_get_stats(int pid, struct stats *st)
+{
+
 }

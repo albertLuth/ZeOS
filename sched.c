@@ -123,7 +123,8 @@ void init_task1(void)
 
 }
 
-void init_stats(struct stats * s){
+void init_stats(struct stats * s)
+{
 	s->user_ticks = 0;
 	s->system_ticks = 0;
 	s->blocked_ticks = 0;
@@ -194,4 +195,63 @@ void task_switch(union task_union *new)
 		"popl %edi\n\t"
 		"popl %esi\n\t"
 	);
+}
+
+void sched_next_rr()
+{
+	struct task_struct * task;
+	if(list_empty(&readyqueue))
+		task = idle_task;
+	else{
+		struct list_head * list = list_first(&readyqueue);
+		list_del(list);
+
+		task =  list_head_to_task_struct(list);
+	}
+
+	task->state = ST_RUN;
+	task_switch(task);
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest)
+{
+	//si l'estat del proces actual no es running, es borra de la llista en la que esta
+	if(t->state != ST_RUN)
+		list_del(&(t->list));
+
+	if(dest == NULL){
+		t->state = ST_RUN;
+	}
+	else{
+		list_add_tail(&(t->list),dest);
+	}
+}
+
+int needs_sched_rr()
+{
+	return current()->quantum_rr == 0;
+}
+
+void update_sched_data_rr()
+{
+	--current()->quantum_rr;
+}
+
+void schedule()
+{
+	update_sched_data_rr();
+	if(needs_sched_rr()){
+		update_process_state_rr(current(),&readyqueue);
+		sched_next_rr();
+	}
+}
+
+int get_quantum(struct task_struct * t)
+{
+	return t->quantum_rr;
+}
+
+void set_quantum(struct task_struct * t, int new_quantum)
+{
+	t->quantum_rr = new_quantum;
 }
