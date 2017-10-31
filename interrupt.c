@@ -103,7 +103,7 @@ void clock_routine()
 {
 	zeos_show_clock();
 	zeos_ticks++;
-	if (zeos_ticks == 1030) task_switch(idle_task);
+	if (zeos_ticks == 1030) task_switch(list_head_to_task_struct(list_first(&readyqueue)));
 }
 
 void keyboard_routine()

@@ -42,14 +42,23 @@ int __attribute__ ((__section__(".text.main")))
     count = 76;
     acum = 0;
     //acum = outer(count);
-    int time = 0;
+    int pid = 0;
     while(1) {
-		time = gettime();
-		char buffer[5];
-		itoa(time, buffer);
-		//write(1, "Gettime: ",9);
-		write(1,buffer,sizeof(buffer));
-		write(1, "\n",1);
+		pid = fork();
+		if(!pid){
+			char buffer[5];
+			itoa(pid, buffer);
+			//write(1, "Gettime: ",9);
+			write(1,buffer,sizeof(buffer));
+			write(1, "fill\n",5);
+		}
+		else {
+			char buffer[5];
+			itoa(pid, buffer);
+			//write(1, "Gettime: ",9);
+			write(1,buffer,sizeof(buffer));
+			write(1, "pare\n",5);
+		}
 	}
     return 0;	
 }
