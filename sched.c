@@ -123,6 +123,15 @@ void init_task1(void)
 
 }
 
+void init_stats(struct stats * s){
+	s->user_ticks = 0;
+	s->system_ticks = 0;
+	s->blocked_ticks = 0;
+	s->ready_ticks = 0;
+	s->elapsed_total_ticks = get_ticks();
+	s->total_trans = 0;
+	s->remaining_ticks = get_ticks();
+}
 
 void init_sched()
 {

@@ -8,6 +8,7 @@
 #include <list.h>
 #include <types.h>
 #include <mm_address.h>
+#include <stats.h>
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
@@ -17,8 +18,10 @@ enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 struct task_struct {	//PCB
 	int PID;			/* Process ID. This MUST be the first field of the struct. */
 	int kernel_esp;
+	int state;
 	page_table_entry * dir_pages_baseAddr;
 	struct list_head list;
+	struct stats statistics;
 };
 
 union task_union {

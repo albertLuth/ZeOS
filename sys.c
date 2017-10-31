@@ -15,10 +15,13 @@
 
 #include <errno.h>
 
+#include <stats.h>
+
 #define LECTURA 0
 #define ESCRIPTURA 1
 
 extern int zeos_ticks;
+int PIDs = 0;
 
 int check_fd(int fd, int permissions)
 {
@@ -66,56 +69,108 @@ int sys_getpid()
 	return current()->PID;
 }
 
+int ret_from_fork()
+{
+	return 0;
+}
+
 int sys_fork() 
 {
-	int PID=-1;
 	// creates the child process
 	
 	//2)
 	//a)
-	if(list_empty(&freequeue)) return -ENOMEM;
+	if(list_empty(&freequeue)) 
+		return -ENOMEM;
 	
 	//b)
 	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la frequeue
 	list_del(child);										//el proces ja no esta en la frequeue
 	
-	struct task_struct *pcb = list_head_to_task_struct(child);
+	struct task_struct *pcb_child = list_head_to_task_struct(child);
 
-	copy_data(current(),pcb,PAGE_SIZE);
+	copy_data( current(), pcb_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
 	
 	//c)
-	allocate_DIR(pcb);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+	allocate_DIR(pcb_child);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
 	
 	//d)
-	int frame = alloc_frame();
-	if(frame == -1) return -ENOMEM;
+	int frame = alloc_frame();				//buscar pagines fisiques on mapejar les pagines logiques per data+stack del fill
+	if(frame == -1) 
+		return -ENOMEM;
 	
 	//e)
-		//i)
-		page_table_entry * PT = get_PT(pcb);
-		//ii)
-		int page, i_free_frame;
-		
-		for (page=0; page<NUM_PAG_DATA; page++) {
-			i_free_frame = alloc_frame();
+	//i)
+	page_table_entry * PT_child = get_PT(pcb_child);
+	page_table_entry * PT_parent = get_PT(current());
+	//ii)
+	int page, i_free_frame;
+	
+	//buscar memoria fisica per data+stack
+	for (page=0; page < NUM_PAG_DATA; page++){
+		i_free_frame = alloc_frame();
 
-			if(i_free_frame == -1){
-				
-				int page2;
-				for (page2 = 0; page2 < page; page2++){
-					free_frame(get_frame(PT,PAG_LOG_INIT_DATA+page2));
-				}
-			}
-			else{
-				set_ss_pag(PT, PAG_LOG_INIT_DATA+page2, i_free_frame);
-			}
+		if(i_free_frame != -1){
+			set_ss_pag(PT_child, PAG_LOG_INIT_DATA+page, i_free_frame);				
 		}
-		
-  
-  
-  
-  
-  return PID;
+		else{
+			//si no es pot tot s'ha d'alliberar tota la memoeria que s'havia reservat fins ara 
+			int page2;
+			for (page2 = 0; page2 < page; page2++){
+				free_frame(get_frame(PT_child,PAG_LOG_INIT_DATA+page2));
+				del_ss_pag(PT_child,PAG_LOG_INIT_DATA+page2);
+			}
+			list_add_tail(child,&frequeue);
+
+			return -ENOMEM;
+		}
+	}
+
+	//les pagines de kernel es comparteixen, nomes s'ha de mapejar les adreces
+	for (page = 0; page < NUM_PAG_KERNEL; page++){
+		set_ss_pag(PT_child, page, get_frame(PT_parent, page));
+	}
+
+	//les pagines de code es comparteixen, nomes s'ha de mapejar les adreces
+	for (page = 0; page < NUM_PAG_CODE; page++){
+		set_ss_pag(PT_child, PAG_LOG_INIT_CODE+page, get_frame(PT_parent, PAG_LOG_INIT_CODE+page));
+	}
+
+	//les pagines de data no es comparteixen, s'ha de copiar i mapejar les adreces
+	for (page = NUM_PAG_KERNEL+NUM_PAG_CODE; page < NUM_PAG_KERNEL+NUM_PAG_CODE+NUM_PAG_DATA; page++){
+		set_ss_pag(PT_parent, NUM_PAG_DATA+page, get_frame(PT_child, page));
+		copy_data((void*)(page<<12), (void*)((page+NUM_PAG_DATA)<<12), PAGE_SIZE);
+		del_ss_pag(PT_parent, NUM_PAG_DATA+page);		
+	}
+
+	set_cr3(get_DIR(current()));
+
+	pcb_child->PID = ++PIDs;
+
+	int ebp;
+
+	__asm__ __volatile__ (
+	    "movl %%ebp, %0\n\t"
+	      : "=g" (ebp)
+	      : );
+
+	ebp=(ebp - (int)current()) + (int)(pcb_child);
+
+	pcb_child->kernel_esp = ebp;
+
+	pcb_child->kernel_esp = (int)&ret_from_fork;
+
+	pcb_child->kernel_esp -= sizeof(long);
+
+	pcb_child->kernel_esp = ebp;
+
+	init_stats(&pcb_child->statistics);
+
+	pcb_child->state = ST_READY;
+
+	list_add_tail(&(pcb_child->list), &readyqueue);
+
+	return pcb_child->PID;
 }
 
 void sys_exit()
