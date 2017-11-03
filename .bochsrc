@@ -1,3 +1,4 @@
+port_e9_hack: enabled=1
 #romimage: file=$BXSHARE/BIOS-bochs-latest
 #vgaromimage: file=$BXSHARE/VGABIOS-elpin-2.40
 megs: 16
@@ -12,6 +13,8 @@ error: action=report
 info: action=report
 debug: action=ignore
 debugger_log: -
+
+
 
 #vga_update_interval: 300000
 #keyboard_serial_delay: 250

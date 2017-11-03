@@ -176,7 +176,23 @@ void sys_exit()
 
 }
 
+extern int remaining_quantum;
+
 void sys_get_stats(int pid, struct stats *st)
 {
-
+  int i;
+  
+  if (!access_ok(VERIFY_WRITE, st, sizeof(struct stats))) return -EFAULT; 
+  
+  if (pid<0) return -EINVAL;
+  for (i=0; i<NR_TASKS; i++)
+  {
+    if (task[i].task.PID==pid)
+    {
+      task[i].task.statistics.remaining_ticks= remaining_quantum;
+      copy_to_user(&(task[i].task.statistics), st, sizeof(struct stats));
+      return 0;
+    }
+  }
+	return -ESRCH; /*ESRCH */	
 }

@@ -6,6 +6,9 @@
 #include <mm.h>
 #include <io.h>
 
+int remaining_quantum = 0;
+#define DEFAULT_QUANTUM 10
+
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
  * to protect against out of bound accesses.
@@ -88,6 +91,7 @@ void init_idle (void)
 	struct task_struct *pcb = list_head_to_task_struct(first);
 
 	pcb->PID = 0;
+	pcb->quantum_rr = DEFAULT_QUANTUM;
 
 	allocate_DIR(pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
 
@@ -110,6 +114,14 @@ void init_task1(void)
 	struct task_struct *pcb = list_head_to_task_struct(first);
 
 	pcb->PID = 1;
+	
+	
+    pcb->quantum_rr = DEFAULT_QUANTUM;
+
+    pcb->state=ST_RUN;
+
+    remaining_quantum = pcb->quantum_rr;
+  
 
 	allocate_DIR(pcb);		//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
 
@@ -141,6 +153,8 @@ void update_stats(unsigned long *v, unsigned long *elapsed)
 	*v += ticks - *elapsed;
 	*elapsed = ticks;
 }
+
+
 void init_sched()
 {
 
@@ -164,11 +178,12 @@ void inner_task_switch(union task_union *new)
 
 	tss.esp0 = (int)&(new->stack[KERNEL_STACK_SIZE]);
 
+	//FLUSH
 	set_cr3(new->task.dir_pages_baseAddr);
 
-	//movl %esp, current()->task.kernel_esp
+	//movl %ebp, current()->task.kernel_esp
 	__asm__ __volatile__(
-		"movl %%esp, %0\n\t"
+		"movl %%ebp, %0\n\t"
 		:"=g" (current()->kernel_esp)
 		:
 	);
@@ -184,6 +199,7 @@ void inner_task_switch(union task_union *new)
 		"popl %ebp\n\t"
 		"ret\n\t"
 	);
+		
 }
 
 
@@ -217,6 +233,12 @@ void sched_next_rr()
 	}
 
 	task->state = ST_RUN;
+	remaining_quantum = get_quantum(task);
+	
+  update_stats(&(current()->statistics.system_ticks), &(current()->statistics.elapsed_total_ticks));
+  update_stats(&(task->statistics.ready_ticks), &(task->statistics.elapsed_total_ticks));
+  task->statistics.total_trans++;
+	
 	task_switch(task);
 }
 
@@ -242,12 +264,14 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest)
 
 int needs_sched_rr()
 {
-	return current()->quantum_rr == 0;
+  if ((remaining_quantum==0)&&(!list_empty(&readyqueue))) return 1;
+  if (remaining_quantum==0) remaining_quantum=get_quantum(current());
+  return 0;
 }
 
 void update_sched_data_rr()
 {
-	--current()->quantum_rr;
+	--remaining_quantum;
 }
 
 void schedule()
@@ -258,6 +282,7 @@ void schedule()
 		sched_next_rr();
 	}
 }
+
 
 int get_quantum(struct task_struct * t)
 {
