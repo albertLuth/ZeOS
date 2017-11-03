@@ -134,6 +134,13 @@ void init_stats(struct stats * s)
 	s->remaining_ticks = get_ticks();
 }
 
+
+void update_stats(unsigned long *v, unsigned long *elapsed)
+{
+	unsigned long ticks = get_ticks();
+	*v += ticks - *elapsed;
+	*elapsed = ticks;
+}
 void init_sched()
 {
 
@@ -224,6 +231,12 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest)
 	}
 	else{
 		list_add_tail(&(t->list),dest);
+		if(dest != &readyqueue)
+			t->state = ST_BLOCKED;
+		else{
+			update_stats(&(t->statistics.system_ticks), &(t->statistics.elapsed_total_ticks));
+			t->state = ST_READY;
+		}
 	}
 }
 
