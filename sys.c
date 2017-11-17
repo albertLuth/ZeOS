@@ -30,6 +30,16 @@ int check_fd(int fd, int permissions)
 	return 0;
 }
 
+void user_to_system(void)
+{
+  update_stats(&(current()->statistics.user_ticks), &(current()->statistics.elapsed_total_ticks));
+}
+
+void system_to_user(void)
+{
+  update_stats(&(current()->statistics.system_ticks), &(current()->statistics.elapsed_total_ticks));
+}
+
 int sys_ni_syscall()
 {
 	return -ENOSYS;

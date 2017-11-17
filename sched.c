@@ -214,6 +214,7 @@ void task_switch(union task_union *new)
 	inner_task_switch(new);
 
 	__asm__ __volatile__ (
+		"popl %ebx\n\t"
   		"popl %ebx\n\t"
 		"popl %edi\n\t"
 		"popl %esi\n\t"
@@ -265,7 +266,7 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest)
 int needs_sched_rr()
 {
   if ((remaining_quantum==0)&&(!list_empty(&readyqueue))) return 1;
-  if (remaining_quantum==0) remaining_quantum=get_quantum(current());
+  if (remaining_quantum==0) return 1;
   return 0;
 }
 

@@ -75,7 +75,10 @@
 
 ENTRY(system_call_handler)
       SAVE_ALL                            // save the current context
-      cmpl $0, %eax                       // is syscall number negative? 
+		pushl %eax;
+		call user_to_system;
+		popl %eax;
+      cmpl $0, %eax;
       jl err                              // if it is, jump to return an error
       cmpl $MAX_SYSCALL, %eax             // is syscall greater than MAX_SYSCALL?
       jg err                              // if it is, jump to return an error
@@ -85,22 +88,37 @@ err:
       movl $-ENOSYS, %eax                 // move to eax the ENOSYS error
 fin:
       movl %eax, 0x18(%esp)               // change the eax value in the stack
+		pushl %eax;
+		call system_to_user;
+		popl %eax;
       RESTORE_ALL                         // restore the context
       iret                                // returns program control from an exception or interrupt handler to a program that was interrupted 
 
 
 ENTRY(keyboard_handler)
       SAVE_ALL
+        pushl %eax;
+		call user_to_system;
+		popl %eax;
       EOI
       call keyboard_routine
+		pushl %eax;
+		call system_to_user;
+		popl %eax;
       RESTORE_ALL                         
       iret
 
 
 ENTRY(clock_handler)
       SAVE_ALL
+        pushl %eax;
+		call user_to_system;
+		popl %eax;
       EOI
       call clock_routine
+      	pushl %eax;
+		call system_to_user;
+		popl %eax;
       RESTORE_ALL                         
       iret
       
