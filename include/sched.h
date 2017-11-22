@@ -9,9 +9,11 @@
 #include <types.h>
 #include <mm_address.h>
 #include <stats.h>
+#include <semaphore.h>
 
 #define NR_TASKS      10
 #define KERNEL_STACK_SIZE	1024
+#define SEMAPHORES_SIZE 20
 
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
 
@@ -31,6 +33,7 @@ union task_union {
 };
 
 extern union task_union protected_tasks[NR_TASKS+2];
+struct semaphore_struct	semaphores[SEMAPHORES_SIZE];
 extern union task_union *task; /* Vector de tasques */
 struct task_struct *idle_task;
 

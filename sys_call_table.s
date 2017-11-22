@@ -31,7 +31,7 @@
  .long sys_ni_syscall
  .long sys_clone
  .long sys_getpid
- .long sys_ni_syscall
+ .long sys_sem_init
  .long sys_ni_syscall
  .long sys_ni_syscall
  .long sys_ni_syscall

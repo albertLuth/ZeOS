@@ -10,6 +10,24 @@
 
 int errno;
 
+int sem_init (int n_sem, unsigned int value)
+{
+    int res;
+  __asm__ volatile( 
+    "int $0x80"                 //  interrupcio 0x80, crida al sistema
+    : "=a" (res),               //  el resultat de %eax es guarda en res
+      "+c" (n_sem),             //  passar el parametre n_sem per %ecx
+      "+b" (value)              //  passar el parametre value per %ebx
+    : "a" (21)                  //  %eax = 19, la crida al sistema clone
+    );
+
+  if(-125 <= res && res < 0){
+    errno = -res;
+    res = -1;
+  }
+  return res;
+}
+
 int write(int fd, char *buffer, int size)
 {
   int res;
@@ -33,10 +51,11 @@ int clone(void (*function)(void), void *stack)
 {
   int res;
   __asm__ volatile( 
-    "int $0x80"             	 //  interrupcio 0x80, crida al sistema
-    : "=a" (function),          //  el resultat de %eax es guarda en res
-      "+b" (stack)	           //  passar el parametre fd per %ebx
-    : "a" (19)                 //  %eax = 19, la crida al sistema clone
+    "int $0x80"             	  //  interrupcio 0x80, crida al sistema
+    : "=a" (res),               //  el resultat de %eax es guarda en res
+      "+c" (function),          //  passar el parametre function per %ecx
+      "+b" (stack)	            //  passar el parametre stack per %ebx
+    : "a" (19)                  //  %eax = 19, la crida al sistema clone
     );
 
   if(-125 <= res && res < 0){
@@ -170,8 +189,12 @@ void perror()
       write(1, "Operation not permitted\n", 24);
       break;
       
-     case ENOMEM:
+    case ENOMEM:
       write(1, "Out of memory\n", 14);
+      break;
+
+    case ENXIO:
+      write(1, "No such device or address\n", 26);
       break;
   }
 }

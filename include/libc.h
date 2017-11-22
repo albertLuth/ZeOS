@@ -10,6 +10,16 @@
 
 int write(int fd, char *buffer, int size);
 
+int clone(void (*function)(void), void *stack);
+
+int sem_init (int n_sem, unsigned int value);
+
+int gettime();
+
+int get_stats(int pid, struct stats *st);
+
+void perror();
+
 void itoa(int a, char *b);
 
 int strlen(char *a);

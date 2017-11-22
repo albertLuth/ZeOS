@@ -23,6 +23,20 @@
 extern int zeos_ticks;
 int PIDs = 1;
 
+
+int sys_sem_init (int n_sem, unsigned int value)
+{
+	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
+		return -ENXIO;
+	else if(semaphores[n_sem].value != -1)
+		return -EINVAL;
+
+	semaphores[n_sem].value = value;
+	semaphores[n_sem].owner = current()->PID;
+	INIT_LIST_HEAD(&semaphores[n_sem].blocked_processes);
+	return 0;
+}
+
 int check_fd(int fd, int permissions)
 {
 	if (fd!=1) return -EBADF; /* Bad file number */
