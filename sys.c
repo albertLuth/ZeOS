@@ -50,6 +50,16 @@ int sys_gettime()
 	return zeos_ticks;
 }
 
+int sys_getpid()
+{
+	return current()->PID;
+}
+
+int ret_from_fork()
+{
+	return 0;
+}
+
 int sys_write(int fd, char * buffer, int size)
 {
 	// fd: file descriptor, in this delivery it must always be 1
@@ -74,14 +84,29 @@ int sys_write(int fd, char * buffer, int size)
 	return res;
 }
 
-int sys_getpid()
+int sys_clone(void (*function)(void), void *stack)
 {
-	return current()->PID;
-}
+	// function: starting address of the function to be executed by the new process
+	// stack   : starting address of a memory region to be used as a stack
+	//
+	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la freequeue
+	list_del(child);										//el proces ja no esta en la freequeue
+	
+	struct task_struct *pcb_child = list_head_to_task_struct(child);
+	union task_union * task_union_child = (union task_union *)pcb_child;
 
-int ret_from_fork()
-{
-	return 0;
+	copy_data( current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
+	//
+	pcb_child->PID = ++PIDs;
+	
+	task_union_child->stack[KERNEL_STACK_SIZE-18] = (int)&ret_from_fork;
+  	task_union_child->stack[KERNEL_STACK_SIZE-19] = 0;
+  	pcb_child->kernel_esp = (int)&task_union_child->stack[KERNEL_STACK_SIZE-19];
+	
+	
+	allocate_DIR(task_union_child);
+	
+	return pcb_child->PID;
 }
 
 int sys_fork() 
