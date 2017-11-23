@@ -82,6 +82,15 @@ void init_freequeue()
 
 }
 
+void init_semaphores()
+{
+	int i;
+	for (i = 0; i < SEMAPHORES_SIZE; ++i)
+	{
+		semaphores[i].ID = -1;
+	}
+}
+
 void init_idle (void)
 { 
 	

@@ -28,12 +28,69 @@ int sys_sem_init (int n_sem, unsigned int value)
 {
 	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
 		return -ENXIO;
-	else if(semaphores[n_sem].value != -1)
+	else if(semaphores[n_sem].owner != -1 || value < 0)
 		return -EINVAL;
 
 	semaphores[n_sem].value = value;
 	semaphores[n_sem].owner = current()->PID;
 	INIT_LIST_HEAD(&semaphores[n_sem].blocked_processes);
+	return 0;
+}
+
+int sys_sem_wait(int n_sem)
+{
+	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
+		return -ENXIO;
+	else if(semaphores[n_sem].owner != -1)
+		return -EINVAL;
+	else if(semaphores[n_sem].value <= 0){
+		//bloquejar
+		list_add_tail(&semaphores[n_sem].blocked_processes, current());
+		sched_next_rr();
+	}
+	else semaphores[n_sem].value--;	
+
+	return 0;
+}
+
+int sys_sem_signal(int n_sem)
+{
+	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
+		return -ENXIO;
+	else if(semaphores[n_sem].owner != -1)
+		return -EINVAL;
+	else if(list_empty(&semaphores[n_sem].blocked_processes))
+		semaphores[n_sem].value++;
+	else{
+		struct list_head *p = list_first(&semaphores[n_sem].blocked_processes);
+		list_del(p); //s'elimina el proces de la llista de bloquejats, es debloqueja
+		list_add_tail(p, &readyqueue);
+		struct task_struct *pcb_p = list_head_to_task_struct(p);
+		pcb_p->state = ST_READY;
+	}
+
+	return 0;
+}
+
+int sys_sem_destroy(int n_sem)
+{
+	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
+		return -ENXIO;
+	else if(semaphores[n_sem].owner != -1)
+		return -EINVAL;
+	else if(semaphores[n_sem].owner != current()->PID){
+		return -EACCES;
+	}
+	else {
+		semaphores[n_sem].owner = -1;
+		while(!list_empty(&semaphores[n_sem].blocked_processes)){
+			struct list_head *p = list_first(&semaphores[n_sem].blocked_processes);
+			list_del(p);
+			list_add_tail(p, &readyqueue);
+			struct task_struct *pcb_p = list_head_to_task_struct(p);
+			pcb_p->state = ST_READY;
+		}
+	}
 	return 0;
 }
 

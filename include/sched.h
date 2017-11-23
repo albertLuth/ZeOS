@@ -49,6 +49,8 @@ void init_readyqueue();
 
 void init_freequeue();
 
+void init_semaphores();
+
 void init_task1(void);
 
 void init_idle(void);
