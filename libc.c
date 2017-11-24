@@ -20,8 +20,8 @@ int sem_init (int n_sem, unsigned int value)
   __asm__ volatile( 
     "int $0x80"                 //  interrupcio 0x80, crida al sistema
     : "=a" (res),               //  el resultat de %eax es guarda en res
-      "+c" (n_sem),             //  passar el parametre n_sem per %ecx
-      "+b" (value)              //  passar el parametre value per %ebx
+      "+b" (n_sem),             //  passar el parametre n_sem per %ecx
+      "+c" (value)              //  passar el parametre value per %ebx
     : "a" (21)                  //  %eax = 21, la crida al sistema sys_sem_init
     );
 
@@ -41,7 +41,7 @@ int sem_wait (int n_sem)
   __asm__ volatile( 
     "int $0x80"                 //  interrupcio 0x80, crida al sistema
     : "=a" (res),               //  el resultat de %eax es guarda en res
-      "+c" (n_sem)              //  passar el parametre n_sem per %ecx
+      "+b" (n_sem)              //  passar el parametre n_sem per %ecx
     : "a" (22)                  //  %eax = 22, la crida al sistema sys_sem_wait
     );
 
@@ -60,7 +60,7 @@ int sem_signal (int n_sem)
   __asm__ volatile( 
     "int $0x80"                 //  interrupcio 0x80, crida al sistema
     : "=a" (res),               //  el resultat de %eax es guarda en res
-      "+c" (n_sem)              //  passar el parametre n_sem per %ecx
+      "+b" (n_sem)              //  passar el parametre n_sem per %ecx
     : "a" (23)                  //  %eax = 23, la crida al sistema sys_sem_signal
     );
 
@@ -80,7 +80,7 @@ int sem_destroy (int n_sem)
   __asm__ volatile( 
     "int $0x80"                 //  interrupcio 0x80, crida al sistema
     : "=a" (res),               //  el resultat de %eax es guarda en res
-      "+c" (n_sem)              //  passar el parametre n_sem per %ecx
+      "+b" (n_sem)              //  passar el parametre n_sem per %ecx
     : "a" (24)                  //  %eax = 24, la crida al sistema sys_sem_destroy
     );
 
@@ -118,8 +118,8 @@ int clone(void (*function)(void), void *stack)
   __asm__ volatile( 
     "int $0x80"             	  //  interrupcio 0x80, crida al sistema
     : "=a" (res),               //  el resultat de %eax es guarda en res
-      "+c" (function),          //  passar el parametre function per %ecx
-      "+b" (stack)	            //  passar el parametre stack per %ebx
+      "+b" (function),          //  passar el parametre function per %ecx
+      "+c" (stack)	            //  passar el parametre stack per %ebx
     : "a" (19)                  //  %eax = 19, la crida al sistema clone
     );
 

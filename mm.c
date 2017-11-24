@@ -24,6 +24,8 @@ page_table_entry dir_pages[NR_TASKS][TOTAL_PAGES]
 
 page_table_entry pagusr_table[NR_TASKS][TOTAL_PAGES]
   __attribute__((__section__(".data.task")));
+  
+int dir_busy[NR_TASKS];
 
 /* TSS */
 TSS         tss; 
@@ -38,18 +40,28 @@ TSS         tss;
   
 void init_dir_pages()
 {
-int i;
+	int i;
 
-for (i = 0; i< NR_TASKS; i++) {
-  dir_pages[i][ENTRY_DIR_PAGES].entry = 0;
-  dir_pages[i][ENTRY_DIR_PAGES].bits.pbase_addr = (((unsigned int)&pagusr_table[i]) >> 12);
-  dir_pages[i][ENTRY_DIR_PAGES].bits.user = 1;
-  dir_pages[i][ENTRY_DIR_PAGES].bits.rw = 1;
-  dir_pages[i][ENTRY_DIR_PAGES].bits.present = 1;
+	for (i = 0; i< NR_TASKS; i++) {
+	  dir_pages[i][ENTRY_DIR_PAGES].entry = 0;
+	  dir_pages[i][ENTRY_DIR_PAGES].bits.pbase_addr = (((unsigned int)&pagusr_table[i]) >> 12);
+	  dir_pages[i][ENTRY_DIR_PAGES].bits.user = 1;
+	  dir_pages[i][ENTRY_DIR_PAGES].bits.rw = 1;
+	  dir_pages[i][ENTRY_DIR_PAGES].bits.present = 1;
+	  dir_busy[i] = 0;
+	}
 
 }
+/*
+void init_dir_busy()
+{
+	int i;
 
-}
+	for (i = 0; i< NR_TASKS; i++) {
+	  dir_busy[i][ENTRY_DIR_PAGES].entry = 0;
+	}
+
+}*/
 
 /* Initializes the page table (kernel pages only) */
 void init_table_pages()
@@ -136,6 +148,7 @@ void init_mm()
   init_table_pages();
   init_frames();
   init_dir_pages();
+  //init_dir_busy();
   allocate_DIR(&task[0].task);
   set_cr3(get_DIR(&task[0].task));
   set_pe_flag();

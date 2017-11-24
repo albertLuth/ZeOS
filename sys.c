@@ -170,12 +170,10 @@ int sys_clone(void (*function)(void), void *stack)
 	//
 	pcb_child->PID = ++PIDs;
 	
-	task_union_child->stack[KERNEL_STACK_SIZE-18] = (int)&ret_from_fork;
-  	task_union_child->stack[KERNEL_STACK_SIZE-19] = 0;
-  	pcb_child->kernel_esp = (int)&task_union_child->stack[KERNEL_STACK_SIZE-19];
-	
-	
 	allocate_DIR(task_union_child);
+	
+	task_union_child->stack[KERNEL_STACK_SIZE-12] = 88;
+
 	
 	return pcb_child->PID;
 }

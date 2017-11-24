@@ -39,7 +39,8 @@ int __attribute__ ((__section__(".text.main")))
 
 		//runjp();
 		//Pasem 26 tests, en fallem 6
-		while(1);
+		clone(12,274);
+		//while(1);
 	
     return 0;	
 }
