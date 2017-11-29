@@ -41,19 +41,18 @@ page_table_entry * get_PT (struct task_struct *t)
 }
 
 
-void allocate_DIR(struct task_struct *t) 
+int allocate_DIR(struct task_struct *t) 
 {
 	int i;
 	for (i = 0; i < NR_TASKS; i++) {
 		if(!dir_busy[i]) {
 			t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[i];
-			dir_busy[i]++;
-			return; 			
+			//dir_busy[i]++;
+			return i; 			
 		}
 	}	
-	
-	
 }
+
 
 void cpu_idle(void)
 {
@@ -93,6 +92,7 @@ void init_semaphores()
 	for (i = 0; i < SEMAPHORES_SIZE; ++i)
 	{
 		semaphores[i].owner = -1;
+		semaphores[i].value = 0;
 	}
 }
 

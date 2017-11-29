@@ -25,11 +25,12 @@ int PIDs = 1;
 
 
 int sys_sem_init (int n_sem, unsigned int value)
-{
+{	
+	printk("INIT");
 	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
-		return -ENXIO;
-	else if(semaphores[n_sem].owner != -1 || value < 0)
 		return -EINVAL;
+	else if(semaphores[n_sem].owner != -1)
+		return -EBUSY;
 
 	semaphores[n_sem].value = value;
 	semaphores[n_sem].owner = current()->PID;
@@ -39,13 +40,14 @@ int sys_sem_init (int n_sem, unsigned int value)
 
 int sys_sem_wait(int n_sem)
 {
+	printk("WAIT");
 	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
-		return -ENXIO;
-	else if(semaphores[n_sem].owner != -1)
 		return -EINVAL;
-	else if(semaphores[n_sem].value <= 0){
-		//bloquejar
-		list_add_tail(&semaphores[n_sem].blocked_processes, current());
+	else if(semaphores[n_sem].owner == -1)
+		return -EINVAL;
+	else if(semaphores[n_sem].value < 0){
+		current()->state = ST_BLOCKED;
+		list_add_tail(&current()->list, &semaphores[n_sem].blocked_processes);
 		sched_next_rr();
 	}
 	else semaphores[n_sem].value--;	
@@ -55,9 +57,10 @@ int sys_sem_wait(int n_sem)
 
 int sys_sem_signal(int n_sem)
 {
+	printk("SIGNAL");
 	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
-		return -ENXIO;
-	else if(semaphores[n_sem].owner != -1)
+		return -EINVAL;
+	else if(semaphores[n_sem].owner == -1)
 		return -EINVAL;
 	else if(list_empty(&semaphores[n_sem].blocked_processes))
 		semaphores[n_sem].value++;
@@ -74,13 +77,15 @@ int sys_sem_signal(int n_sem)
 
 int sys_sem_destroy(int n_sem)
 {
+	printk("DESTROY");
 	if(n_sem >= SEMAPHORES_SIZE || n_sem < 0)
-		return -ENXIO;
-	else if(semaphores[n_sem].owner != -1)
 		return -EINVAL;
-	else if(semaphores[n_sem].owner != current()->PID){
-		return -EACCES;
-	}
+	else if(semaphores[n_sem].owner != current()->PID && semaphores[n_sem].owner != -1)
+		return -EPERM;	
+	else if(semaphores[n_sem].owner == current()->PID && semaphores[n_sem].owner == -1)
+		return -EINVAL;
+	else if(semaphores[n_sem].owner != current()->PID && semaphores[n_sem].owner == -1)
+		return -EINVAL;
 	else {
 		semaphores[n_sem].owner = -1;
 		while(!list_empty(&semaphores[n_sem].blocked_processes)){
@@ -100,6 +105,7 @@ int check_fd(int fd, int permissions)
 	if (permissions!=ESCRIPTURA) return -EACCES; /* Permission denied */
 	return 0;
 }
+
 
 void user_to_system(void)
 {
@@ -155,25 +161,51 @@ int sys_write(int fd, char * buffer, int size)
 	return res;
 }
 
+
+
 int sys_clone(void (*function)(void), void *stack)
 {
 	// function: starting address of the function to be executed by the new process
 	// stack   : starting address of a memory region to be used as a stack
 	//
+	
+	if (!access_ok(VERIFY_READ,function,16) || !access_ok(VERIFY_WRITE,stack,16) ){  
+		  return -EFAULT;
+	}
+	
 	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la freequeue
 	list_del(child);										//el proces ja no esta en la freequeue
 	
 	struct task_struct *pcb_child = list_head_to_task_struct(child);
 	union task_union * task_union_child = (union task_union *)pcb_child;
+	
 
-	copy_data( current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
+	pcb_child->dir_pages_baseAddr = current()->dir_pages_baseAddr;
+
+	copy_data( (union task_union*)current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
 	//
 	pcb_child->PID = ++PIDs;
 	
-	allocate_DIR(task_union_child);
+	//
+	task_union_child->stack[KERNEL_STACK_SIZE-18] = (int)&ret_from_fork;
+  	task_union_child->stack[KERNEL_STACK_SIZE-19] = 0;
+  	pcb_child->kernel_esp = (int)&task_union_child->stack[KERNEL_STACK_SIZE-19];
 	
-	task_union_child->stack[KERNEL_STACK_SIZE-12] = 88;
+	task_union_child->stack[KERNEL_STACK_SIZE-5] = function;
+	task_union_child->stack[KERNEL_STACK_SIZE-2] = stack;
+	
+	
+	//allocate_DIR(task_union_child)];
+		
+	init_stats(&pcb_child->statistics);
 
+	pcb_child->state = ST_READY;
+	
+	
+	
+
+	//INIT_LIST_HEAD(&(pcb_child->list));
+	list_add_tail(&(pcb_child->list), &readyqueue);
 	
 	return pcb_child->PID;
 }
@@ -264,6 +296,10 @@ int sys_fork()
 
 void sys_exit()
 {
+	int i;
+	for (i = 0; i < SEMAPHORES_SIZE; ++i) {
+		if (semaphores[i].owner == current()->PID) sys_sem_destroy(i);
+	}
 
 	struct task_struct * pcb = current();
 	page_table_entry * PT = get_PT(pcb);
@@ -277,6 +313,8 @@ void sys_exit()
 	list_add_tail(&(pcb->list), &freequeue);
 	pcb->PID = -1;
 	sched_next_rr();
+	
+	
 
 }
 

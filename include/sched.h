@@ -63,7 +63,7 @@ void task_switch(union task_union*t);
 
 struct task_struct *list_head_to_task_struct(struct list_head *l);
 
-void allocate_DIR(struct task_struct *t);
+int allocate_DIR(struct task_struct *t);
 
 page_table_entry * get_PT (struct task_struct *t) ;
 
