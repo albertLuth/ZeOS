@@ -40,6 +40,26 @@ page_table_entry * get_PT (struct task_struct *t)
 	return (page_table_entry *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr))<<12);
 }
 
+int get_pos_DIR(struct task_struct *t) 
+{
+	int pos;
+
+	pos = ((int)t-(int)task)/sizeof(union task_union);
+
+	return pos;
+}
+
+int allocate_DIR_task0(struct task_struct *t) 
+{
+	int i;
+	for (i = 0; i < NR_TASKS; i++) {
+		if(!dir_busy[i]) {
+			t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[i];
+			dir_busy[i]++;
+			return i; 			
+		}
+	}	
+}
 
 int allocate_DIR(struct task_struct *t) 
 {
@@ -52,6 +72,26 @@ int allocate_DIR(struct task_struct *t)
 		}
 	}	
 }
+
+
+/*
+int allocate_DIR(struct task_struct *t) 
+{
+	int pos;
+
+	pos = ((int)t-(int)task)/sizeof(union task_union);
+	
+
+		t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos]; 
+		
+		dir_busy[pos]++;
+		
+		return 1;
+
+}
+*/
+
+
 
 
 void cpu_idle(void)
@@ -146,6 +186,8 @@ void init_task1(void)
 	tss.esp0 = KERNEL_ESP(task_u);
 
 	set_cr3(pcb->dir_pages_baseAddr);
+	
+	dir_busy[0]
 
 }
 

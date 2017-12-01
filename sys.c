@@ -179,7 +179,10 @@ int sys_clone(void (*function)(void), void *stack)
 	struct task_struct *pcb_child = list_head_to_task_struct(child);
 	union task_union * task_union_child = (union task_union *)pcb_child;
 	
-	dir_busy[pcb_child->dir_pos]++;
+	
+	int pos = get_pos_DIR(pcb_child);
+	
+	dir_busy[pos]++;
 
 	copy_data( (union task_union*)current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
 	//
@@ -228,8 +231,11 @@ int sys_fork()
 	copy_data( current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
 	
 	//c)
-	int pos = allocate_DIR(pcb_child);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
-	pcb_child->dir_pos = pos;
+	int err = allocate_DIR(pcb_child);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+	if(err == -1) printk("ERROR");
+	
+	//int pos = get_pos_DIR(pcb_child);
+	//dir_busy[pos]++;
 	//e)
 	//i)
 	page_table_entry * PT_child = get_PT(pcb_child);
@@ -292,7 +298,7 @@ int sys_fork()
 
 	return pcb_child->PID;
 }
-
+/*
 void sys_exit()
 {
 	int i;
@@ -303,19 +309,48 @@ void sys_exit()
 	struct task_struct * pcb = current();
 	page_table_entry * PT = get_PT(pcb);
 
-	dir_busy[pcb->dir_pos]--;
 
-	int page;
-	for (page = PAG_LOG_INIT_DATA; page < NUM_PAG_DATA+PAG_LOG_INIT_DATA; page++){
-		free_frame(get_frame(PT,page));
-		del_ss_pag(PT,page);
+	int pos = get_pos_DIR(pcb);
+	dir_busy[pos]--;
+	
+	if (dir_busy[pos] <= 0) {
+		int page;
+		for (page = PAG_LOG_INIT_DATA; page < NUM_PAG_DATA+PAG_LOG_INIT_DATA; page++){
+			free_frame(get_frame(PT,page));
+			del_ss_pag(PT,page);
+		}
+	
 	}
-
 	list_add_tail(&(pcb->list), &freequeue);
 	pcb->PID = -1;
 	sched_next_rr();
+}*/
+
+void sys_exit()
+{
+	int i;
+	for (i = 0; i < SEMAPHORES_SIZE; ++i) {
+		if (semaphores[i].owner == current()->PID) sys_sem_destroy(i);
+	}
+
+	struct task_struct * pcb = current();
+	page_table_entry * PT = get_PT(pcb);
 	
+	int pos = get_pos_DIR(pcb);
+	dir_busy[pos]--;
+
+	if (dir_busy[pos] == 0) {
+		int page;
+		for (page = PAG_LOG_INIT_DATA; page < NUM_PAG_DATA+PAG_LOG_INIT_DATA; page++){
+			free_frame(get_frame(PT,page));
+			del_ss_pag(PT,page);
+		}
 	
+
+	list_add_tail(&(pcb->list), &freequeue);
+	}
+	pcb->PID = -1;
+	sched_next_rr();
 
 }
 
