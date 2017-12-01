@@ -16,7 +16,7 @@
 #include <errno.h>
 
 #include <stats.h>
-
+	
 #define LECTURA 0
 #define ESCRIPTURA 1
 
@@ -174,20 +174,13 @@ int sys_clone(void (*function)(void), void *stack)
 	}
 	
 	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la freequeue
-	list_del(child);										//el proces ja no esta en la freequeue
-	
 	struct task_struct *pcb_child = list_head_to_task_struct(child);
 	union task_union * task_union_child = (union task_union *)pcb_child;
-	
-	
-	int pos = get_pos_DIR(pcb_child);
-	
-	dir_busy[pos]++;
+	list_del(child);
+
 
 	copy_data( (union task_union*)current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
-	//
-	pcb_child->PID = ++PIDs;
-	
+	//	
 	//
 	task_union_child->stack[KERNEL_STACK_SIZE-18] = (int)&ret_from_fork;
   	task_union_child->stack[KERNEL_STACK_SIZE-19] = 0;
@@ -196,15 +189,19 @@ int sys_clone(void (*function)(void), void *stack)
 	task_union_child->stack[KERNEL_STACK_SIZE-5] = function;
 	task_union_child->stack[KERNEL_STACK_SIZE-2] = stack;
 	
+		
+	int pos = get_pos_DIR(pcb_child);
+	
+	dir_busy[pos]++;
+	
+	pcb_child->PID = ++PIDs;
+	
 	
 	//allocate_DIR(task_union_child)];
 		
 	init_stats(&pcb_child->statistics);
 
 	pcb_child->state = ST_READY;
-	
-	
-	
 
 	//INIT_LIST_HEAD(&(pcb_child->list));
 	list_add_tail(&(pcb_child->list), &readyqueue);
@@ -336,10 +333,13 @@ void sys_exit()
 	struct task_struct * pcb = current();
 	page_table_entry * PT = get_PT(pcb);
 	
+
 	int pos = get_pos_DIR(pcb);
+	//if (dir_busy[pos] < 0) printk("OJOOOOOOOOOO");
 	dir_busy[pos]--;
 
 	if (dir_busy[pos] == 0) {
+		
 		int page;
 		for (page = PAG_LOG_INIT_DATA; page < NUM_PAG_DATA+PAG_LOG_INIT_DATA; page++){
 			free_frame(get_frame(PT,page));
@@ -347,9 +347,10 @@ void sys_exit()
 		}
 	
 
-	list_add_tail(&(pcb->list), &freequeue);
+		list_add_tail(&(pcb->list), &freequeue);
+		pcb->PID = -1;
 	}
-	pcb->PID = -1;
+	
 	sched_next_rr();
 
 }

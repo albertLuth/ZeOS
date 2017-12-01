@@ -49,47 +49,37 @@ int get_pos_DIR(struct task_struct *t)
 	return pos;
 }
 
-int allocate_DIR_task0(struct task_struct *t) 
-{
-	int i;
-	for (i = 0; i < NR_TASKS; i++) {
-		if(!dir_busy[i]) {
-			t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[i];
-			dir_busy[i]++;
-			return i; 			
-		}
-	}	
-}
-
+	//ALLOCATE NUEVO, SE QUEDA EN EL TEST[15] DEL FORK
+ /*
 int allocate_DIR(struct task_struct *t) 
 {
 	int i;
-	for (i = 0; i < NR_TASKS; i++) {
+	for (i = 1; i < NR_TASKS; i++) {
 		if(!dir_busy[i]) {
 			t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[i];
 			dir_busy[i]++;
-			return i; 			
-		}
+			return i; 
+		}			
+		
 	}	
 }
+*/
 
-
-/*
+	//ALLOCATE VIEJO, PASA EL FORK
 int allocate_DIR(struct task_struct *t) 
 {
 	int pos;
 
 	pos = ((int)t-(int)task)/sizeof(union task_union);
-	
 
+	if(!dir_busy[pos]) {
 		t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos]; 
-		
 		dir_busy[pos]++;
+	}
 		
-		return 1;
+	return pos;
 
 }
-*/
 
 
 
@@ -186,8 +176,7 @@ void init_task1(void)
 	tss.esp0 = KERNEL_ESP(task_u);
 
 	set_cr3(pcb->dir_pages_baseAddr);
-	
-	dir_busy[0]
+
 
 }
 

@@ -50,6 +50,8 @@ void init_dir_pages()
 	  dir_pages[i][ENTRY_DIR_PAGES].bits.present = 1;
 	  dir_busy[i] = 0;
 	}
+	
+
 
 }
 /*
@@ -149,7 +151,8 @@ void init_mm()
   init_frames();
   init_dir_pages();
   //init_dir_busy();
-  allocate_DIR(&task[0].task);
+  int pos = allocate_DIR(&task[0].task);
+  dir_busy[pos] = 0;
   set_cr3(get_DIR(&task[0].task));
   set_pe_flag();
 }
