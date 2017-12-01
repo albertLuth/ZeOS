@@ -179,8 +179,7 @@ int sys_clone(void (*function)(void), void *stack)
 	struct task_struct *pcb_child = list_head_to_task_struct(child);
 	union task_union * task_union_child = (union task_union *)pcb_child;
 	
-
-	pcb_child->dir_pages_baseAddr = current()->dir_pages_baseAddr;
+	dir_busy[pcb_child->dir_pos]++;
 
 	copy_data( (union task_union*)current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
 	//
@@ -229,8 +228,8 @@ int sys_fork()
 	copy_data( current(), task_union_child, sizeof(union task_union) );	//copiar el task union del pare en el fill
 	
 	//c)
-	allocate_DIR(pcb_child);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
-	
+	int pos = allocate_DIR(pcb_child);				//inicialitza el camp dir_pages_baseAddr per guardar l'espai d'adreces
+	pcb_child->dir_pos = pos;
 	//e)
 	//i)
 	page_table_entry * PT_child = get_PT(pcb_child);
@@ -303,6 +302,8 @@ void sys_exit()
 
 	struct task_struct * pcb = current();
 	page_table_entry * PT = get_PT(pcb);
+
+	dir_busy[pcb->dir_pos]--;
 
 	int page;
 	for (page = PAG_LOG_INIT_DATA; page < NUM_PAG_DATA+PAG_LOG_INIT_DATA; page++){

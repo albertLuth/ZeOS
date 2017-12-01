@@ -47,7 +47,7 @@ int allocate_DIR(struct task_struct *t)
 	for (i = 0; i < NR_TASKS; i++) {
 		if(!dir_busy[i]) {
 			t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[i];
-			//dir_busy[i]++;
+			dir_busy[i]++;
 			return i; 			
 		}
 	}	

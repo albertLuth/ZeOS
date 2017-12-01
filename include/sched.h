@@ -25,6 +25,8 @@ struct task_struct {	//PCB
 	struct list_head list;
 	struct stats statistics;
 	int quantum_rr;
+	int dir_pos;
+
 };
 
 union task_union {
