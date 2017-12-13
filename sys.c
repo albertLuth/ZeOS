@@ -16,13 +16,32 @@
 #include <errno.h>
 
 #include <stats.h>
-	
+	 
 #define LECTURA 0
 #define ESCRIPTURA 1
 
 extern int zeos_ticks;
 int PIDs = 1;
 
+void *sys_sbrk(int increment) 
+{	
+	struct task_struct *pcb = current();
+	//void * program_break = current()->program_break;
+	
+	
+	if (increment > 0) {
+		
+		
+		
+	}
+	else if (increment < 0) {
+		
+		
+	} 
+	pcb->program_break += increment;  
+	
+	return pcb->program_break;
+}
 
 int sys_sem_init (int n_sem, unsigned int value)
 {	
@@ -185,13 +204,14 @@ int sys_read_keyboard(char *buffer,int count)
 	if((bytesCircularBufferOcupados) >= count) {
 		for (i = 0; i < count; i++) {
 			buffer[i] = circularbuffer[(posicionInicialParaLeer+i)%512]; 
+			//buffer[i] = 'a';
 		}
 		bytesCircularBufferOcupados -= count;
 		posicionInicialParaLeer += count;
 		
 		for (i = 0; i < count; i++) {
-			printk("printk");
-			printk(buffer[i]); 
+			//printk("printk");
+			printc(buffer[i]);
 		}
 	  
 	}
@@ -350,6 +370,20 @@ int sys_fork()
 	set_cr3(get_DIR(current()));
 
 	pcb_child->PID = ++PIDs;
+
+
+	/////////// HEAP ////////////
+	//pcb_child->program_break = HEAP_START*4096;
+	pcb_child->program_break = current()->program_break;
+	/*
+	for (page = HEAP_START; page < current()->program_break; page++){
+		set_ss_pag(PT_parent, NUM_PAG_DATA+page, get_frame(PT_child, page));
+		copy_data((void*)(page<<12), (void*)((page+NUM_PAG_DATA)<<12), PAGE_SIZE);
+		del_ss_pag(PT_parent, NUM_PAG_DATA+page);		
+	}
+	*/
+	/////////////////////////////////////////////////////////////////////
+
 
 
 	task_union_child->stack[KERNEL_STACK_SIZE-18] = (int)&ret_from_fork;

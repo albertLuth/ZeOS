@@ -3,6 +3,7 @@
 
 #define ENTRY_DIR_PAGES       0
 
+#define PAGE_SIZE 4096
 #define TOTAL_PAGES 1024
 #define NUM_PAG_KERNEL 256
 #define PAG_LOG_INIT_CODE (L_USER_START>>12)
@@ -14,9 +15,9 @@
 
 /* Memory distribution */
 /***********************/
+#define HEAP_START        NUM_PAG_KERNEL+NUM_PAG_CODE+NUM_PAG_DATA
 
-
-#define KERNEL_START     0x10000
+#define KERNEL_START     	0x10000
 #define L_USER_START        0x100000
 #define PH_USER_START       0x100000
 #define USER_ESP	L_USER_START+(NUM_PAG_CODE+NUM_PAG_DATA)*0x1000-16

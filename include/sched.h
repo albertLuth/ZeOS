@@ -26,7 +26,7 @@ struct task_struct {	//PCB
 	struct stats statistics;
 	int quantum_rr;
 	int dir_pos;
-
+	int program_break;
 };
 
 union task_union {

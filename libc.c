@@ -91,6 +91,23 @@ int sem_destroy (int n_sem)
   return res;
 }
 
+void *sbrk(int increment)
+{
+    int res;
+  __asm__ volatile( 
+    "int $0x80"                 //  interrupcio 0x80, crida al sistema
+    : "=a" (res),               //  el resultat de %eax es guarda en res
+      "+b" (increment)              //  passar el parametre n_sem per %ecx
+    : "a" (8)                  //  %eax = 8, la crida al sistema sys_sem_destroy
+    );
+
+  if(-125 <= res && res < 0){
+    errno = -res;
+    res = -1;
+  }
+ 
+}
+
 
 
 int write(int fd, char *buffer, int size)
@@ -121,7 +138,7 @@ int read(int fd, char *buffer, int count)
       "+b" (fd),            //  passar el parametre fd per %ebx
       "+c" (buffer),        //  passar el parametre bufer per %ecx
       "+d" (count)           //  passar el parametre size per %edx
-    : "a" (3)               //  %eax = 4, la crida al sistema write
+    : "a" (3)               //  %eax = 3, la crida al sistema write
     );
 
   if(-125 <= res && res < 0){
