@@ -6,6 +6,12 @@
 #include <mm.h>
 #include <io.h>
 
+int bytesCircularBufferOcupados = 0;
+int posicionInicialParaLeer = 0;
+
+char circularbuffer[512];
+
+
 int remaining_quantum = 0;
 #define DEFAULT_QUANTUM 10
 
@@ -103,6 +109,11 @@ void cpu_idle(void)
 void init_readyqueue()
 {
 	INIT_LIST_HEAD(&readyqueue);
+}
+
+void init_keyboardqueue()
+{
+	INIT_LIST_HEAD(&keyboardqueue);
 }
 
 void init_freequeue()
@@ -205,6 +216,7 @@ void init_sched()
 
 	init_freequeue();
 	init_readyqueue();
+	init_keyboardqueue();
 }
 
 struct task_struct* current()

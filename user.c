@@ -36,13 +36,19 @@ int __attribute__ ((__section__(".text.main")))
 {
     /* Next line, tries to move value 0 to CR3 register. This register is a privileged one, and so it will raise an exception */
      /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
-
-		runjp();
+		int buff[24];
+		int b[42];
+		//read(1,buff,24);
+		//runjp();
 		//runjp_rank(3,3);
 		//runjp_rank(15,15);
 		//Pasem 26 tests, en fallem 6
 		//clone(15,1000);
-		while(1);
+		while(1) {
+			int res = read(0,buff,6);	
+			itoa(res,b);
+			write(1,b,20);
+		}
 	
     return 0;	
 }

@@ -1,7 +1,7 @@
 /*
  * sched.h - Estructures i macros pel tractament de processos
  */
-
+//((0.5*((0.5*4.7) + (0.5*2.5) )) + (0.5*((0.35*6.5) + (0.35*4.25) + (0.30*7.5))) + 0.7)*(10/11)
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
@@ -34,6 +34,10 @@ union task_union {
   unsigned long stack[KERNEL_STACK_SIZE];    /* pila de sistema, per procés */
 };
 
+extern int bytesCircularBufferOcupados;
+extern int posicionInicialParaLeer;
+
+
 extern union task_union protected_tasks[NR_TASKS+2];
 struct semaphore_struct	semaphores[SEMAPHORES_SIZE];
 extern union task_union *task; /* Vector de tasques */
@@ -41,6 +45,10 @@ struct task_struct *idle_task;
 
 struct list_head freequeue;
 struct list_head readyqueue;
+
+struct list_head keyboardqueue;
+
+extern char circularbuffer[512];
 
 #define KERNEL_ESP(t)       	(DWord) &(t)->stack[KERNEL_STACK_SIZE]
 

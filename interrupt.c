@@ -111,16 +111,27 @@ void clock_routine()
 void keyboard_routine()
 {
   unsigned char input = inb( 0x60 );
-  
+  unsigned char c;
 
 
   if ( input&0x80 ){
     
-    unsigned char c = char_map[input & 0x7f];
+    c = char_map[input & 0x7f];
+    
+    circularbuffer[(posicionInicialParaLeer+bytesCircularBufferOcupados)%512] = c;
+	bytesCircularBufferOcupados++;
+    
     if(c != '\0') 
       printc_xy(70,2, c );
     else
       printc_xy(70,2,'C');
   }
+  
+
+  
+  
+  
+  
+  
 }
 

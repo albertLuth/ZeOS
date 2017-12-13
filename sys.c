@@ -101,8 +101,10 @@ int sys_sem_destroy(int n_sem)
 
 int check_fd(int fd, int permissions)
 {
-	if (fd!=1) return -EBADF; /* Bad file number */
-	if (permissions!=ESCRIPTURA) return -EACCES; /* Permission denied */
+
+	if ((fd == 1) && permissions!=ESCRIPTURA) return -EACCES; /* Permission denied */
+	else if ((fd == 0) && permissions!=LECTURA) return -EACCES; /* Permission denied */
+	else if (fd!=1 && fd!=0) return -EBADF; /* Bad file number */
 	return 0;
 }
 
@@ -160,6 +162,74 @@ int sys_write(int fd, char * buffer, int size)
 	}
 	return res;
 }
+
+
+int sys_read_keyboard(char *buffer,int count)
+{
+  int i;
+  struct task_struct * pcb = current();
+    
+    
+  //If there  are  processes  waiting  for  data  (already  blocked),  
+  // then  block  the  process  at  the end of the keyboardqueue
+  // and schedule the next process.
+  if(!list_empty(&keyboardqueue)) {
+	  pcb->state = ST_BLOCKED;
+	  list_add_tail(pcb, &keyboardqueue);
+	  schedule();
+  } 
+  else {
+    //if the buffer contains all requested characters(count), 
+	// copy them to the user buffer (buf) and return the total 
+	// number of characters read
+	if((bytesCircularBufferOcupados) >= count) {
+		for (i = 0; i < count; i++) {
+			buffer[i] = circularbuffer[(posicionInicialParaLeer+i)%512]; 
+		}
+		bytesCircularBufferOcupados -= count;
+		posicionInicialParaLeer += count;
+		
+		for (i = 0; i < count; i++) {
+			printk("printk");
+			printk(buffer[i]); 
+		}
+	  
+	}
+	else count = 0;
+	  
+	  
+  }
+  
+ 
+  return count;
+}
+
+int sys_read(int fd, char *buffer, int count)
+{
+	//read()  attempts to read up to ’count’ bytes from file descriptor ’fd’ into
+	//the buffer starting at ’buf’.
+	int res = -1;
+	
+	//if(fd == 1) printk("OK");
+	
+	int check = check_fd(fd, LECTURA);
+
+	if(check)  {
+		printk("CHECK");
+		return check;
+		
+	}
+
+	if(count <= 0) return -EINVAL;
+
+	if(buffer != NULL) res = sys_read_keyboard(buffer,count);
+
+	//res = hola(buffer,size);
+	return res;
+}
+
+
+
 
 
 
