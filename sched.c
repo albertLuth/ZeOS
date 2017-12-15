@@ -48,19 +48,22 @@ page_table_entry * get_PT (struct task_struct *t)
 
 int get_pos_DIR(struct task_struct *t) 
 {
-	int pos;
-
-	pos = ((int)t-(int)task)/sizeof(union task_union);
-
-	return pos;
+	int i;
+	for (i = 0; i < NR_TASKS; i++) {
+		if(t->dir_pages_baseAddr == (page_table_entry*) &dir_pages[i]) {
+			return i; 
+		}			
+		
+	}	
+	return -1;
 }
 
 	//ALLOCATE NUEVO, SE QUEDA EN EL TEST[15] DEL FORK
- /*
+ 
 int allocate_DIR(struct task_struct *t) 
 {
 	int i;
-	for (i = 1; i < NR_TASKS; i++) {
+	for (i = 0; i < NR_TASKS; i++) {
 		if(!dir_busy[i]) {
 			t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[i];
 			dir_busy[i]++;
@@ -69,8 +72,8 @@ int allocate_DIR(struct task_struct *t)
 		
 	}	
 }
-*/
 
+/*
 	//ALLOCATE VIEJO, PASA EL FORK
 int allocate_DIR(struct task_struct *t) 
 {
@@ -87,7 +90,7 @@ int allocate_DIR(struct task_struct *t)
 
 }
 
-
+*/
 
 
 void cpu_idle(void)
@@ -133,7 +136,6 @@ void init_semaphores()
 	for (i = 0; i < SEMAPHORES_SIZE; ++i)
 	{
 		semaphores[i].owner = -1;
-		semaphores[i].value = 0;
 	}
 }
 

@@ -64,7 +64,7 @@ int sys_sem_wait(int n_sem)
 		return -EINVAL;
 	else if(semaphores[n_sem].owner == -1)
 		return -EINVAL;
-	else if(semaphores[n_sem].value < 0){
+	else if(semaphores[n_sem].value <= 0){
 		current()->state = ST_BLOCKED;
 		list_add_tail(&current()->list, &semaphores[n_sem].blocked_processes);
 		sched_next_rr();
@@ -201,10 +201,17 @@ int sys_read_keyboard(char *buffer,int count)
     //if the buffer contains all requested characters(count), 
 	// copy them to the user buffer (buf) and return the total 
 	// number of characters read
+	printk("ENTRA1");
+	//int b[42];			
+	//itoa(res,b);
+	printc(count);
 	if((bytesCircularBufferOcupados) >= count) {
+		printk("ENTRA2");
 		for (i = 0; i < count; i++) {
 			buffer[i] = circularbuffer[(posicionInicialParaLeer+i)%512]; 
+			//printk(buffer);
 			//buffer[i] = 'a';
+			
 		}
 		bytesCircularBufferOcupados -= count;
 		posicionInicialParaLeer += count;
@@ -214,14 +221,21 @@ int sys_read_keyboard(char *buffer,int count)
 			printc(buffer[i]);
 		}
 	  
+	
 	}
-	else count = 0;
+	else  {
+		count = 0;
+	  /*pcb->state = ST_BLOCKED;
+	  list_add_tail(pcb, &keyboardqueue);
+	  schedule();*/
+		
+		
+	}
 	  
 	  
   }
-  
- 
-  return count;
+  //if (count == 0) printk("hola");
+  return 1;
 }
 
 int sys_read(int fd, char *buffer, int count)
@@ -230,7 +244,9 @@ int sys_read(int fd, char *buffer, int count)
 	//the buffer starting at ’buf’.
 	int res = -1;
 	
-	//if(fd == 1) printk("OK");
+	if(fd != 0) return -EBADF;
+	
+	if(buffer == NULL) return -EFAULT;
 	
 	int check = check_fd(fd, LECTURA);
 
@@ -242,7 +258,7 @@ int sys_read(int fd, char *buffer, int count)
 
 	if(count <= 0) return -EINVAL;
 
-	if(buffer != NULL) res = sys_read_keyboard(buffer,count);
+	res = sys_read_keyboard(buffer,count);
 
 	//res = hola(buffer,size);
 	return res;
@@ -258,11 +274,13 @@ int sys_clone(void (*function)(void), void *stack)
 	// function: starting address of the function to be executed by the new process
 	// stack   : starting address of a memory region to be used as a stack
 	//
-	
+	printk("CLONE_IN");
 	if (!access_ok(VERIFY_READ,function,16) || !access_ok(VERIFY_WRITE,stack,16) ){  
 		  return -EFAULT;
 	}
-	
+	if (list_empty(&freequeue))
+		return -ENOMEM;
+		
 	struct list_head *child =  list_first(&freequeue);		//agafar el primer element de la freequeue
 	struct task_struct *pcb_child = list_head_to_task_struct(child);
 	union task_union * task_union_child = (union task_union *)pcb_child;
@@ -279,23 +297,23 @@ int sys_clone(void (*function)(void), void *stack)
 	task_union_child->stack[KERNEL_STACK_SIZE-5] = function;
 	task_union_child->stack[KERNEL_STACK_SIZE-2] = stack;
 	
-		
+	
 	int pos = get_pos_DIR(pcb_child);
 	
 	dir_busy[pos]++;
 	
 	pcb_child->PID = ++PIDs;
-	
+		
 	
 	//allocate_DIR(task_union_child)];
 		
 	init_stats(&pcb_child->statistics);
 
 	pcb_child->state = ST_READY;
-
+	printk("CLONE_OUT");
 	//INIT_LIST_HEAD(&(pcb_child->list));
 	list_add_tail(&(pcb_child->list), &readyqueue);
-	
+
 	return pcb_child->PID;
 }
 
@@ -449,11 +467,10 @@ void sys_exit()
 			free_frame(get_frame(PT,page));
 			del_ss_pag(PT,page);
 		}
-	
 
-		list_add_tail(&(pcb->list), &freequeue);
-		pcb->PID = -1;
 	}
+	list_add_tail(&(pcb->list), &freequeue);
+	pcb->PID = -1;
 	
 	sched_next_rr();
 
@@ -461,7 +478,7 @@ void sys_exit()
 
 extern int remaining_quantum;
 
-void sys_get_stats(int pid, struct stats *st)
+int sys_get_stats(int pid, struct stats *st)
 {
   int i;
   
