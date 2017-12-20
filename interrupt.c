@@ -110,21 +110,50 @@ void clock_routine()
 
 void keyboard_routine()
 {
+
   unsigned char input = inb( 0x60 );
   unsigned char c;
 
 
   if ( input&0x80 ){
-    
+      printk("KEYBOARD_ROUTINE");
     c = char_map[input & 0x7f];
-    
     circularbuffer[(posicionInicialParaLeer+bytesCircularBufferOcupados)%512] = c;
 	bytesCircularBufferOcupados++;
-    
     if(c != '\0') 
       printc_xy(70,2, c );
     else
       printc_xy(70,2,'C');
+      
+      if (!list_empty(&keyboardqueue)) {
+		  
+		  
+		  
+	/*	  if(list_empty(&readyqueue))
+	 printk(" empty2 ");
+	 else 
+	 printk(" no empty2 ");
+		  */
+		  
+		  
+		  
+		  
+		  
+		  printk("NOOOOOOO");
+		struct list_head *pcb_list =  list_first(&keyboardqueue);		//agafar el primer element de la keyboardqueue
+		struct task_struct * pcb= list_head_to_task_struct(pcb_list);
+		pcb->state = ST_READY;
+		list_del(pcb_list);
+		list_add_tail(pcb_list,&readyqueue);
+		//sched_next_rr();
+		printk("YEAH");
+		
+		
+	/*	if(list_empty(&readyqueue))
+	 printk(" empty3 ");
+	 else 
+	 printk(" no empty3 ");*/
+	}
   }
   
 

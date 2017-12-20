@@ -42,13 +42,13 @@ int __attribute__ ((__section__(".text.main")))
 		//write(1,b,20);
 		//read(0,buff,24);
 		//runjp();
-		//runjp_rank(4,4);
+		runjp_rank(4,4);
 		//runjp_rank(15,15);
 		//Pasem 26 tests, en fallem 6
 		//clone(15,1000);
 		while(1) {
-			int res = read(0,buff,6);	
-			itoa(res,b);
+			//int res = read(0,buff,1);	
+			//itoa(res,b);
 			//write(1,b,6);
 		}
 		

@@ -96,16 +96,9 @@ int allocate_DIR(struct task_struct *t)
 void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
-	int pid = sys_fork();
-	char buffer[5];
-	itoa(pid, buffer);
-	//write(1, "Gettime: ",9);
-	printk("getpid() = ");
-	sys_write(1,buffer,sizeof(buffer));
-	printk("\n");
 	while(1)
 	{
-
+		;
 	}
 }
 
@@ -142,6 +135,8 @@ void init_semaphores()
 void init_idle (void)
 { 
 	
+	printk("IDLE");
+	
 	struct list_head *first =  list_first(&freequeue);		//agafar el primer element de la frequeue
 	list_del(first);										//el proces ja no esta en la frequeue
 	
@@ -158,7 +153,7 @@ void init_idle (void)
 	task_u->stack[KERNEL_STACK_SIZE-2] = 0;					//ebp
 	task_u->task.kernel_esp = (unsigned long)&(task_u->stack[KERNEL_STACK_SIZE-2]);
 	//task_u.task.kernel_esp = KERNEL_ESP(&task_u);			//esp
-
+	pcb->program_break = HEAP_START*PAGE_SIZE;
 	idle_task = pcb;
 }
 
@@ -189,6 +184,9 @@ void init_task1(void)
 	tss.esp0 = KERNEL_ESP(task_u);
 
 	set_cr3(pcb->dir_pages_baseAddr);
+	
+	pcb->program_break = HEAP_START*PAGE_SIZE;
+	
 
 
 }
@@ -283,13 +281,15 @@ void task_switch(union task_union *new)
 void sched_next_rr()
 {
 	struct task_struct * task;
-	if(list_empty(&readyqueue))
+	if(list_empty(&readyqueue)){
+		printk(" EMPTY ");
 		task = idle_task;
-	else{
+	}else{
+		printk(" NO EMPTY ");
 		struct list_head * list = list_first(&readyqueue);
-		list_del(list);
-
 		task =  list_head_to_task_struct(list);
+		if(task->PID != 0) printk(" OJOOOOOOOOOOOOOOOOOOOOOOOOO ");
+		list_del(list);		
 	}
 
 	task->state = ST_RUN;
@@ -299,12 +299,20 @@ void sched_next_rr()
   update_stats(&(task->statistics.ready_ticks), &(task->statistics.elapsed_total_ticks));
   task->statistics.total_trans++;
 	
+	printk("BBB");
 	task_switch(task);
+	printk("AAA");
+
+	/*if(list_empty(&readyqueue))
+	 printk(" empty ");
+	 else 
+	 printk(" no empty ");*/
 }
 
 void update_process_state_rr(struct task_struct *t, struct list_head *dest)
 {
 	//si l'estat del proces actual no es running, es borra de la llista en la que esta
+	printk(" - ");
 	if(t->state != ST_RUN)
 		list_del(&(t->list));
 

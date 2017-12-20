@@ -28,16 +28,23 @@ void *sys_sbrk(int increment)
 	struct task_struct *pcb = current();
 	//void * program_break = current()->program_break;
 	
-	
 	if (increment > 0) {
+		void * old_pb = pcb->program_break;
 		
+		pcb->program_break += increment;
 		
+		if((pcb->program_break - (void *)(HEAP_START*PAGE_SIZE))%PAGE_SIZE > (old_pb - (void *)(HEAP_START*PAGE_SIZE))%PAGE_SIZE){
+			//S'ha de reservar memoria
+			
+				set_ss_pag(get_PT(current()), HEAP_START, alloc_frame());
 		
+		}		
+		return old_pb;
 	}
 	else if (increment < 0) {
 		
 		
-	} 
+	}
 	pcb->program_break += increment;  
 	
 	return pcb->program_break;
@@ -160,6 +167,7 @@ int ret_from_fork()
 
 int sys_write(int fd, char * buffer, int size)
 {
+
 	// fd: file descriptor, in this delivery it must always be 1
 	// buffer: pointer to the bytes
 	// size: number of bytes
@@ -177,7 +185,10 @@ int sys_write(int fd, char * buffer, int size)
 	
 	if(buffer != NULL) {
 		copy_from_user(buffer, buffer, size);
-		res = sys_write_console(buffer,size);
+		res = sys_write_console(buffer,size);   
+		
+	    //circularbuffer[(posicionInicialParaLeer+bytesCircularBufferOcupados)%512] = buffer[0];
+		//bytesCircularBufferOcupados++;
 	}
 	return res;
 }
@@ -185,55 +196,55 @@ int sys_write(int fd, char * buffer, int size)
 
 int sys_read_keyboard(char *buffer,int count)
 {
+	 printk("iniciRead");
   int i;
   struct task_struct * pcb = current();
-    
     
   //If there  are  processes  waiting  for  data  (already  blocked),  
   // then  block  the  process  at  the end of the keyboardqueue
   // and schedule the next process.
   if(!list_empty(&keyboardqueue)) {
-	  pcb->state = ST_BLOCKED;
+	  pcb->state = ST_BLOCKED;	  
 	  list_add_tail(pcb, &keyboardqueue);
-	  schedule();
+	  sched_next_rr();
   } 
   else {
     //if the buffer contains all requested characters(count), 
 	// copy them to the user buffer (buf) and return the total 
 	// number of characters read
 	printk("ENTRA1");
+	//bytesCircularBufferOcupados = 1;
 	//int b[42];			
-	//itoa(res,b);
-	printc(count);
+	//itoa(count,b);
+	//printc(b);
+	
+	
 	if((bytesCircularBufferOcupados) >= count) {
 		printk("ENTRA2");
 		for (i = 0; i < count; i++) {
 			buffer[i] = circularbuffer[(posicionInicialParaLeer+i)%512]; 
-			//printk(buffer);
-			//buffer[i] = 'a';
 			
 		}
 		bytesCircularBufferOcupados -= count;
 		posicionInicialParaLeer += count;
-		
+		printk("read: ");
 		for (i = 0; i < count; i++) {
-			//printk("printk");
+			
 			printc(buffer[i]);
 		}
 	  
-	
 	}
 	else  {
-		count = 0;
-	  /*pcb->state = ST_BLOCKED;
+	  count = 0;
+	  pcb->state = ST_BLOCKED;
 	  list_add_tail(pcb, &keyboardqueue);
-	  schedule();*/
-		
-		
+	  sched_next_rr();		
 	}
+	
 	  
 	  
   }
+  printk("FiRead");
   //if (count == 0) printk("hola");
   return 1;
 }
@@ -249,6 +260,9 @@ int sys_read(int fd, char *buffer, int count)
 	if(buffer == NULL) return -EFAULT;
 	
 	int check = check_fd(fd, LECTURA);
+	
+	if(!access_ok(VERIFY_READ,buffer, count))
+		return -EFAULT;
 
 	if(check)  {
 		printk("CHECK");
@@ -262,6 +276,8 @@ int sys_read(int fd, char *buffer, int count)
 
 	//res = hola(buffer,size);
 	return res;
+	
+	
 }
 
 
@@ -392,7 +408,6 @@ int sys_fork()
 
 	/////////// HEAP ////////////
 	//pcb_child->program_break = HEAP_START*4096;
-	pcb_child->program_break = current()->program_break;
 	/*
 	for (page = HEAP_START; page < current()->program_break; page++){
 		set_ss_pag(PT_parent, NUM_PAG_DATA+page, get_frame(PT_child, page));
