@@ -116,7 +116,7 @@ void keyboard_routine()
 
 
   if ( input&0x80 ){
-      printk("KEYBOARD_ROUTINE");
+    //printk("KEYBOARD_ROUTINE");
     c = char_map[input & 0x7f];
     circularbuffer[(posicionInicialParaLeer+bytesCircularBufferOcupados)%512] = c;
 	bytesCircularBufferOcupados++;
@@ -139,14 +139,14 @@ void keyboard_routine()
 		  
 		  
 		  
-		  printk("NOOOOOOO");
+		//  printk("NOOOOOOO");
 		struct list_head *pcb_list =  list_first(&keyboardqueue);		//agafar el primer element de la keyboardqueue
 		struct task_struct * pcb= list_head_to_task_struct(pcb_list);
 		pcb->state = ST_READY;
 		list_del(pcb_list);
 		list_add_tail(pcb_list,&readyqueue);
 		//sched_next_rr();
-		printk("YEAH");
+		//printk("YEAH");
 		
 		
 	/*	if(list_empty(&readyqueue))

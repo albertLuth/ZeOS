@@ -26,26 +26,24 @@ int PIDs = 1;
 void *sys_sbrk(int increment) 
 {	
 	struct task_struct *pcb = current();
-	//void * program_break = current()->program_break;
-	
+
 	if (increment > 0) {
 		void * old_pb = pcb->program_break;
-		
-		pcb->program_break += increment;
-		
-		if((pcb->program_break - (void *)(HEAP_START*PAGE_SIZE))%PAGE_SIZE > (old_pb - (void *)(HEAP_START*PAGE_SIZE))%PAGE_SIZE){
-			//S'ha de reservar memoria
-			
-				set_ss_pag(get_PT(current()), HEAP_START, alloc_frame());
-		
-		}		
+		void * actual_pb = pcb->program_break;
+		void * final_pb = (pcb->program_break)+ increment;		
+		int i = 0;
+		while(final_pb < actual_pb){
+			set_ss_pag(get_PT(current()), ((int)old_pb >> 12)+i, alloc_frame());		
+			actual_pb += PAGE_SIZE;
+			++i;
+		}
+		pcb->program_break = final_pb;
 		return old_pb;
 	}
 	else if (increment < 0) {
 		
-		
-	}
-	pcb->program_break += increment;  
+		pcb->program_break += increment;
+	}	  
 	
 	return pcb->program_break;
 }
@@ -196,57 +194,39 @@ int sys_write(int fd, char * buffer, int size)
 
 int sys_read_keyboard(char *buffer,int count)
 {
-	 printk("iniciRead");
+
   int i;
   struct task_struct * pcb = current();
-    
+ 
   //If there  are  processes  waiting  for  data  (already  blocked),  
   // then  block  the  process  at  the end of the keyboardqueue
   // and schedule the next process.
   if(!list_empty(&keyboardqueue)) {
 	  pcb->state = ST_BLOCKED;	  
-	  list_add_tail(pcb, &keyboardqueue);
+	  list_add_tail(&(pcb->list), &keyboardqueue);
 	  sched_next_rr();
   } 
   else {
-    //if the buffer contains all requested characters(count), 
-	// copy them to the user buffer (buf) and return the total 
-	// number of characters read
-	printk("ENTRA1");
-	//bytesCircularBufferOcupados = 1;
-	//int b[42];			
-	//itoa(count,b);
-	//printc(b);
 	
-	
-	if((bytesCircularBufferOcupados) >= count) {
-		printk("ENTRA2");
-		for (i = 0; i < count; i++) {
-			buffer[i] = circularbuffer[(posicionInicialParaLeer+i)%512]; 
-			
-		}
-		bytesCircularBufferOcupados -= count;
-		posicionInicialParaLeer += count;
-		printk("read: ");
-		for (i = 0; i < count; i++) {
-			
-			printc(buffer[i]);
-		}
-	  
-	}
-	else  {
-	  count = 0;
+	while((bytesCircularBufferOcupados) < count){
 	  pcb->state = ST_BLOCKED;
-	  list_add_tail(pcb, &keyboardqueue);
-	  sched_next_rr();		
+	  list_add_tail(&(pcb->list), &keyboardqueue);
+	  sched_next_rr();	
 	}
 	
-	  
+	for (i = 0; i < count; i++) {
+		buffer[i] = circularbuffer[(posicionInicialParaLeer+i)%512]; 
+	}
+	bytesCircularBufferOcupados -= count;
+	posicionInicialParaLeer += count;
+	//printk("read: ");
+	for (i = 0; i < count; i++) {
+		printc(buffer[i]);
+	}    
 	  
   }
-  printk("FiRead");
-  //if (count == 0) printk("hola");
-  return 1;
+
+  return count;
 }
 
 int sys_read(int fd, char *buffer, int count)

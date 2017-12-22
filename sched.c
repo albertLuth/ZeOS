@@ -135,7 +135,7 @@ void init_semaphores()
 void init_idle (void)
 { 
 	
-	printk("IDLE");
+	//printk("IDLE");
 	
 	struct list_head *first =  list_first(&freequeue);		//agafar el primer element de la frequeue
 	list_del(first);										//el proces ja no esta en la frequeue
@@ -282,13 +282,13 @@ void sched_next_rr()
 {
 	struct task_struct * task;
 	if(list_empty(&readyqueue)){
-		printk(" EMPTY ");
+		//printk(" EMPTY ");
 		task = idle_task;
 	}else{
-		printk(" NO EMPTY ");
+		//printk(" NO EMPTY ");
 		struct list_head * list = list_first(&readyqueue);
 		task =  list_head_to_task_struct(list);
-		if(task->PID != 0) printk(" OJOOOOOOOOOOOOOOOOOOOOOOOOO ");
+		//if(task->PID != 0) printk(" OJOOOOOOOOOOOOOOOOOOOOOOOOO ");
 		list_del(list);		
 	}
 
@@ -299,9 +299,9 @@ void sched_next_rr()
   update_stats(&(task->statistics.ready_ticks), &(task->statistics.elapsed_total_ticks));
   task->statistics.total_trans++;
 	
-	printk("BBB");
+	//printk("BBB");
 	task_switch(task);
-	printk("AAA");
+	//printk("AAA");
 
 	/*if(list_empty(&readyqueue))
 	 printk(" empty ");
@@ -312,7 +312,7 @@ void sched_next_rr()
 void update_process_state_rr(struct task_struct *t, struct list_head *dest)
 {
 	//si l'estat del proces actual no es running, es borra de la llista en la que esta
-	printk(" - ");
+	//printk(" - ");
 	if(t->state != ST_RUN)
 		list_del(&(t->list));
 
